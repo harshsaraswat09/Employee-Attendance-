@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
+import attendanceRoutes from "./routes/attendance.routes.js";
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "Attendance API running" });
