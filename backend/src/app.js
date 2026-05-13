@@ -3,6 +3,8 @@ import cors from "cors";
 import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
+import overtimeRoutes from "./routes/overtime.routes.js";
+
 
 const app = express();
 
@@ -12,6 +14,8 @@ app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/overtime", overtimeRoutes);
+
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "Attendance API running" });
