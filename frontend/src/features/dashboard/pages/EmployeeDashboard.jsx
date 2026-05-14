@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../shared/components/Sidebar.jsx";
 import PunchPage from "../../attendance/pages/PunchPage.jsx";
 import MyAttendancePage from "../../attendance/pages/MyAttendancePage.jsx";
@@ -9,174 +8,211 @@ import OvertimePage from "../../overtime/pages/OvertimePage.jsx";
 import { useAttendance } from "../../attendance/hook/useAttendance.js";
 import { useOvertime } from "../../overtime/hook/useOvertime.js";
 import {
-  CalendarDays,
-  CheckCircle,
-  Clock,
-  Timer,
-  Search,
-  Fingerprint,
-  TrendingUp,
+  CheckCircle2, TrendingUp, BarChart2,
+  Search, Fingerprint, Timer,
 } from "lucide-react";
 
+/* ── colours ── */
+const C = {
+  bg:      "var(--color-bg-main)",
+  card:    "var(--color-bg-card)",
+  inner:   "var(--color-bg-inner)",
+  border:  "var(--color-border-subtle)",
+  orange:  "var(--color-accent-primary)",
+  indigo:  "var(--color-accent-secondary)",
+  green:   "var(--color-accent-success)",
+  yellow:  "var(--color-accent-warning)",
+  red:     "var(--color-accent-danger)",
+  t1:      "var(--color-text-primary)",
+  t2:      "var(--color-text-secondary)",
+  tm:      "var(--color-text-muted)",
+};
+
+/* ── Stat card — Metric Flow style ── */
+const StatCard = ({ label, value, sub, subColor, Icon, iconBg }) => (
+  <div
+    className="metric-card"
+    style={{ flex: 1, display: "flex", alignItems: "flex-start", gap: 16 }}
+  >
+    <div style={{
+      width: 44, height: 44, borderRadius: 11, flexShrink: 0,
+      background: iconBg, display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <Icon size={20} color={subColor || C.orange} />
+    </div>
+    <div>
+      <p style={{ fontSize: 11, fontWeight: 600, color: C.t2, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
+        {label}
+      </p>
+      <p style={{ fontSize: 26, fontWeight: 700, color: C.t1, lineHeight: 1, letterSpacing: "-0.5px" }}>
+        {value}
+      </p>
+      {sub && (
+        <p style={{ fontSize: 11, fontWeight: 500, color: subColor || C.t2, marginTop: 5 }}>
+          {sub}
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+/* ── DashboardHome ── */
 const DashboardHome = ({ setActivePage }) => {
-  const { records } = useSelector((state) => state.attendance);
-  const { myOvertimes } = useSelector((state) => state.overtime);
-  const { user } = useSelector((state) => state.auth);
+  const { records }     = useSelector((s) => s.attendance);
+  const { myOvertimes } = useSelector((s) => s.overtime);
+  const { user }        = useSelector((s) => s.auth);
 
   const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
+    weekday: "long", month: "long", day: "numeric",
   });
 
-  const todayRecord = records.find(
-    (r) => r.date === new Date().toISOString().split("T")[0]
-  );
-
-  const totalDays = records.length;
+  const todayRecord   = records.find((r) => r.date === new Date().toISOString().split("T")[0]);
+  const totalDays     = records.length;
   const completedDays = records.filter((r) => r.status === "completed").length;
-  const weeklyHours = records
-    .slice(0, 5)
-    .reduce((acc, r) => acc + (r.workingHours || 0), 0)
-    .toFixed(1);
-  const pendingOT = myOvertimes.filter((o) => o.status === "pending").length;
+  const weeklyHours   = records.slice(0, 5).reduce((a, r) => a + (r.workingHours || 0), 0).toFixed(1);
+  const pendingOT     = myOvertimes.filter((o) => o.status === "pending").length;
 
-  const isPunchedIn = !!todayRecord?.punchIn?.time;
+  const isPunchedIn  = !!todayRecord?.punchIn?.time;
   const isPunchedOut = !!todayRecord?.punchOut?.time;
 
-  const currentStatus = isPunchedOut
-    ? "Completed"
-    : isPunchedIn
-    ? "On Duty"
-    : "Off Duty";
+  const statusLabel = isPunchedOut ? "Completed" : isPunchedIn ? "On Duty" : "Off Duty";
+  const statusColor = isPunchedOut || isPunchedIn ? C.green : C.t2;
 
-  const statusColorClass = isPunchedOut
-    ? "text-[var(--color-accent-success)] bg-[var(--color-accent-success)]"
-    : isPunchedIn
-    ? "text-[var(--color-accent-success)] bg-[var(--color-accent-success)]"
-    : "text-[var(--color-text-secondary)] bg-[var(--color-text-secondary)]";
+  /* ── GAP constant — every section uses this ── */
+  const GAP = 16;
+  const PAD = 28;
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-[var(--color-bg-main)]">
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh", background: C.bg }}>
 
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-[var(--color-border-subtle)]">
+      {/* ── TOP BAR ── */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: `20px ${PAD}px`,
+        borderBottom: `1px solid ${C.border}`,
+        background: C.bg,
+      }}>
         <div>
-          <h2 className="text-2xl font-bold text-white tracking-wide">
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.3px" }}>
             Welcome back, {user?.name?.split(" ")[0]} 👋
           </h2>
-          <p className="text-sm mt-1 text-[var(--color-text-secondary)]">{today}</p>
+          <p style={{ fontSize: 13, color: C.t2, marginTop: 3 }}>{today}</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {/* Search */}
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)]">
-            <Search size={16} className="text-[var(--color-text-secondary)]" />
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "9px 16px", borderRadius: 999,
+            background: C.card, border: `1px solid ${C.border}`,
+          }}>
+            <Search size={14} color={C.t2} />
             <input
-              type="text"
-              placeholder="Search..."
-              className="bg-transparent text-sm outline-none w-48 text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-muted)]"
+              type="text" placeholder="Search..."
+              style={{ background: "transparent", border: "none", outline: "none", fontSize: 13, color: C.t2, width: 160 }}
             />
           </div>
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm bg-[var(--color-accent-primary)] ring-2 ring-white/10 shadow-lg shadow-[var(--color-accent-primary)]/20">
+          <div style={{
+            width: 38, height: 38, borderRadius: "50%",
+            background: C.orange, display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, fontWeight: 700, color: "#fff",
+            boxShadow: "0 0 0 3px rgba(249,115,22,0.15)",
+          }}>
             {user?.name?.charAt(0).toUpperCase()}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-1 gap-6 p-8">
-        {/* Left — Main Content */}
-        <div className="flex-1 space-y-6">
+      {/* ── BODY ── */}
+      <div style={{
+        flex: 1, display: "flex", gap: GAP,
+        padding: PAD,
+      }}>
 
-          {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-6">
-            {/* Status */}
-            <div className="metric-card shadow-sm">
-              <p className="text-xs font-semibold mb-3 text-[var(--color-text-secondary)] uppercase tracking-wider">Status</p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2.5 h-2.5 rounded-full ${statusColorClass.split(' ')[1]}`} />
-                  <p className="text-2xl font-bold text-white">{currentStatus}</p>
-                </div>
-              </div>
-            </div>
+        {/* ── LEFT (main) ── */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: GAP, minWidth: 0 }}>
 
-            {/* Weekly Hours */}
-            <div className="metric-card shadow-sm">
-              <p className="text-xs font-semibold mb-3 text-[var(--color-text-secondary)] uppercase tracking-wider flex justify-between">
-                Weekly Hours
-                <span className="flex items-center text-[var(--color-accent-secondary)] gap-1 lowercase text-[10px]">
-                  <TrendingUp size={12} />
-                  on track
-                </span>
-              </p>
-              <div className="flex items-end gap-1.5">
-                <p className="text-3xl font-bold text-white leading-none">{weeklyHours}</p>
-                <p className="text-sm text-[var(--color-text-secondary)] mb-0.5">/ 40h</p>
-              </div>
-            </div>
-
-            {/* Total Records */}
-            <div className="metric-card shadow-sm">
-              <p className="text-xs font-semibold mb-3 text-[var(--color-text-secondary)] uppercase tracking-wider">Total Records</p>
-              <p className="text-3xl font-bold text-white leading-none">{totalDays}</p>
-            </div>
+          {/* Stat cards row — exactly like Metric Flow */}
+          <div style={{ display: "flex", gap: GAP }}>
+            <StatCard
+              label="Status" value={statusLabel}
+              sub={isPunchedOut ? "Shift complete" : isPunchedIn ? "Currently working" : "Not started"}
+              Icon={CheckCircle2} subColor={statusColor}
+              iconBg={`${statusColor}18`}
+            />
+            <StatCard
+              label="Weekly Hours" value={`${weeklyHours}h`}
+              sub="↑ on track · 40h target"
+              Icon={TrendingUp} subColor={C.indigo}
+              iconBg="rgba(99,102,241,0.12)"
+            />
+            <StatCard
+              label="Total Records" value={totalDays}
+              sub={`${completedDays} completed`}
+              Icon={BarChart2} subColor={C.orange}
+              iconBg="rgba(249,115,22,0.12)"
+            />
           </div>
 
-          {/* Recent Activity Table */}
-          <div className="metric-card h-[400px] flex flex-col shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-base font-bold text-white">Recent Activity</p>
+          {/* Recent Activity — clean table card */}
+          <div className="metric-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {/* Card header */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: C.t1 }}>Recent Activity</p>
+                <p style={{ fontSize: 12, color: C.t2, marginTop: 3 }}>Your attendance statistic report</p>
+              </div>
               <button
                 onClick={() => setActivePage("attendance")}
-                className="text-xs font-semibold transition text-[var(--color-text-secondary)] hover:text-white"
+                style={{ fontSize: 12, fontWeight: 600, color: C.orange, background: "none", border: "none", cursor: "pointer" }}
               >
                 View All
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto pr-2">
-              <table className="w-full text-left border-collapse">
+            {/* Table */}
+            <div style={{ overflowY: "auto", flex: 1 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr className="border-b border-[var(--color-border-subtle)] text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
-                    <th className="pb-3 pl-2 font-semibold">Date</th>
-                    <th className="pb-3 font-semibold">Punch In</th>
-                    <th className="pb-3 font-semibold">Punch Out</th>
-                    <th className="pb-3 font-semibold text-right pr-2">Hours</th>
+                  <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                    {["DATE", "PUNCH IN", "PUNCH OUT", "HOURS"].map((h, i) => (
+                      <th key={h} style={{
+                        paddingBottom: 10, fontSize: 10, fontWeight: 700,
+                        color: C.tm, letterSpacing: "0.08em",
+                        textAlign: i === 3 ? "right" : "left",
+                      }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {records.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="text-sm text-center py-12 text-[var(--color-text-muted)]">
+                      <td colSpan={4} style={{ textAlign: "center", padding: "40px 0", fontSize: 13, color: C.tm }}>
                         No attendance records yet.
                       </td>
                     </tr>
                   ) : (
-                    records.slice(0, 6).map((record) => (
-                      <tr key={record._id} className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-card-hover)] transition-colors">
-                        <td className="py-3 pl-2 text-sm text-white font-medium">{record.date}</td>
-                        <td className="py-3 text-sm text-[var(--color-text-secondary)]">
-                          {record.punchIn?.time
-                            ? new Date(record.punchIn.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                            : "--"}
+                    records.slice(0, 6).map((r) => (
+                      <tr key={r._id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <td style={{ padding: "13px 0", fontSize: 13, fontWeight: 600, color: C.t1 }}>{r.date}</td>
+                        <td style={{ padding: "13px 0", fontSize: 13, color: C.t2 }}>
+                          {r.punchIn?.time ? new Date(r.punchIn.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
                         </td>
-                        <td className="py-3 text-sm text-[var(--color-text-secondary)]">
-                          {record.punchOut?.time
-                            ? new Date(record.punchOut.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                            : "--"}
+                        <td style={{ padding: "13px 0", fontSize: 13, color: C.t2 }}>
+                          {r.punchOut?.time ? new Date(r.punchOut.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
                         </td>
-                        <td className="py-3 text-sm text-right pr-2">
-                           <div className="flex items-center justify-end gap-3">
-                            <p className="text-white font-medium">
-                              {record.workingHours ? `${record.workingHours}h` : "--"}
-                            </p>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1
-                                ${record.status === 'completed' ? 'bg-[var(--color-accent-success)]/10 text-[var(--color-accent-success)]' : 'bg-[var(--color-accent-warning)]/10 text-[var(--color-accent-warning)]'}`}
-                            >
-                              {record.status === "completed" ? "Done" : "Active"}
-                            </span>
-                          </div>
+                        <td style={{ padding: "13px 0", textAlign: "right" }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginRight: 10 }}>
+                            {r.workingHours ? `${r.workingHours}h` : "—"}
+                          </span>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 5,
+                            background: r.status === "completed" ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
+                            color: r.status === "completed" ? C.green : C.yellow,
+                            textTransform: "uppercase", letterSpacing: "0.05em",
+                          }}>
+                            {r.status === "completed" ? "Done" : "Active"}
+                          </span>
                         </td>
                       </tr>
                     ))
@@ -187,83 +223,99 @@ const DashboardHome = ({ setActivePage }) => {
           </div>
         </div>
 
-        {/* Right — Action Cards */}
-        <div className="w-80 space-y-6">
+        {/* ── RIGHT PANEL ── */}
+        <div style={{ width: 268, display: "flex", flexDirection: "column", gap: GAP, flexShrink: 0 }}>
 
-          {/* Punch Card */}
-          <div className="metric-card flex flex-col items-center text-center shadow-sm border border-[var(--color-border-subtle)] relative overflow-hidden">
-             {/* Decorative glow */}
-             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent-primary)]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+          {/* Shift / Punch card */}
+          <div className="metric-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", overflow: "hidden" }}>
+            {/* Glow */}
+            <div style={{
+              position: "absolute", top: -40, right: -40,
+              width: 140, height: 140, borderRadius: "50%",
+              background: "rgba(249,115,22,0.08)", filter: "blur(30px)", pointerEvents: "none",
+            }} />
 
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-[var(--color-accent-primary)]/10 border border-[var(--color-accent-primary)]/20 shadow-inner">
-              <Fingerprint size={28} className="text-[var(--color-accent-primary)]" />
+            <div style={{
+              width: 64, height: 64, borderRadius: 16, marginBottom: 14,
+              background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Fingerprint size={28} color={C.orange} />
             </div>
-            <p className="text-lg font-bold text-white mb-2">
-              {isPunchedOut ? "Shift Complete" : isPunchedIn ? "You're On Duty" : "Start your shift"}
+
+            <p style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 6 }}>
+              {isPunchedOut ? "Shift Complete" : isPunchedIn ? "You're On Duty" : "Start Your Shift"}
             </p>
-            <p className="text-xs mb-6 text-[var(--color-text-secondary)] leading-relaxed">
+            <p style={{ fontSize: 12, color: C.t2, lineHeight: 1.6, marginBottom: isPunchedOut ? 0 : 18 }}>
               {isPunchedOut
                 ? "Great work today! Enjoy your time off."
                 : isPunchedIn
                 ? "Make sure to punch out before you leave."
                 : "Time to record your attendance."}
             </p>
+
             {!isPunchedOut && (
               <button
                 onClick={() => setActivePage("punch")}
-                className="w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all shadow-lg hover:shadow-[var(--color-accent-primary)]/20 active:scale-[0.98] bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-hover)]"
+                style={{
+                  width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
+                  background: C.orange, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 4px 16px rgba(249,115,22,0.3)", transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--color-accent-hover)"}
+                onMouseLeave={e => e.currentTarget.style.background = C.orange}
               >
                 {isPunchedIn ? "Punch Out Now" : "Punch In Now"}
               </button>
             )}
           </div>
 
-          {/* Overtime Card */}
-          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)] hover:border-[var(--color-border-subtle)]/80 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded bg-[var(--color-accent-secondary)]/10">
-                   <Timer size={16} className="text-[var(--color-accent-secondary)]" />
-                </div>
-                <p className="text-sm font-bold text-white tracking-wide">Overtime</p>
+          {/* Overtime card */}
+          <div className="metric-card">
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Timer size={14} color={C.indigo} />
               </div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: C.t1 }}>Overtime</p>
             </div>
-            
-            <p className="text-xs mb-5 text-[var(--color-text-secondary)] leading-relaxed">
+            <p style={{ fontSize: 12, color: C.t2, lineHeight: 1.6, marginBottom: 16 }}>
               Need extra time? Request overtime approval from your manager.
             </p>
-
-            <div className="flex items-center justify-between mt-auto">
-                <div className="flex flex-col">
-                  {pendingOT > 0 ? (
-                    <span className="text-[10px] font-bold text-[var(--color-accent-warning)] uppercase tracking-wider">
-                      {pendingOT} Pending
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
-                      No Requests
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => setActivePage("overtime")}
-                  className="text-xs font-semibold px-4 py-2 rounded-lg bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)] hover:bg-white/5 transition-colors text-white"
-                >
-                  Request
-                </button>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{
+                fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em",
+                color: pendingOT > 0 ? C.yellow : C.tm,
+              }}>
+                {pendingOT > 0 ? `${pendingOT} Pending` : "No Requests"}
+              </span>
+              <button
+                onClick={() => setActivePage("overtime")}
+                style={{
+                  fontSize: 12, fontWeight: 600, padding: "7px 14px", borderRadius: 8,
+                  background: C.inner, border: `1px solid ${C.border}`,
+                  color: C.t1, cursor: "pointer", transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
+                onMouseLeave={e => e.currentTarget.style.background = C.inner}
+              >
+                Request
+              </button>
             </div>
           </div>
 
-          {/* Stats Mini */}
-          <div className="metric-card p-5 grid grid-cols-2 gap-4 shadow-sm border border-[var(--color-border-subtle)]">
-            <div className="bg-[var(--color-bg-main)] rounded-xl p-4 border border-[var(--color-border-subtle)] flex flex-col justify-center text-center">
-              <p className="text-[10px] font-bold mb-1.5 text-[var(--color-text-muted)] uppercase tracking-wider">Completed</p>
-              <p className="text-2xl font-bold text-[var(--color-accent-success)]">{completedDays}</p>
-            </div>
-            <div className="bg-[var(--color-bg-main)] rounded-xl p-4 border border-[var(--color-border-subtle)] flex flex-col justify-center text-center">
-              <p className="text-[10px] font-bold mb-1.5 text-[var(--color-text-muted)] uppercase tracking-wider">Pending OT</p>
-              <p className="text-2xl font-bold text-white">{pendingOT}</p>
-            </div>
+          {/* Mini stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: GAP }}>
+            {[
+              { label: "Completed", value: completedDays, color: C.green },
+              { label: "Pending OT", value: pendingOT,    color: C.t1 },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="metric-card" style={{ textAlign: "center", padding: "18px 12px" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: C.tm, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>
+                  {label}
+                </p>
+                <p style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{value}</p>
+              </div>
+            ))}
           </div>
 
         </div>
@@ -272,33 +324,32 @@ const DashboardHome = ({ setActivePage }) => {
   );
 };
 
+/* ── Shell ── */
 const EmployeeDashboard = () => {
   const [activePage, setActivePage] = useState("dashboard");
   const { handleGetMyAttendance } = useAttendance();
-  const { handleGetMyOvertimes } = useOvertime();
+  const { handleGetMyOvertimes }  = useOvertime();
 
   useEffect(() => {
     handleGetMyAttendance();
     handleGetMyOvertimes();
   }, []);
 
-  const renderPage = () => {
+  const render = () => {
     switch (activePage) {
-      case "dashboard": return <DashboardHome setActivePage={setActivePage} />;
-      case "punch": return <PunchPage />;
+      case "dashboard":  return <DashboardHome setActivePage={setActivePage} />;
+      case "punch":      return <PunchPage />;
       case "attendance": return <MyAttendancePage />;
-      case "overtime": return <OvertimePage />;
-      case "report": return <ReportPage />;
-      default: return <DashboardHome setActivePage={setActivePage} />;
+      case "overtime":   return <OvertimePage />;
+      case "report":     return <ReportPage />;
+      default:           return <DashboardHome setActivePage={setActivePage} />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-bg-main)] text-[var(--color-text-primary)]">
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg-main)" }}>
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
-      <main className="flex-1 overflow-y-auto">
-        {renderPage()}
-      </main>
+      <main style={{ flex: 1, overflowY: "auto" }}>{render()}</main>
     </div>
   );
 };

@@ -1,118 +1,164 @@
 import { useSelector } from "react-redux";
 import { useAuth } from "../../features/auth/hook/useAuth.js";
 import {
-  LayoutDashboard,
-  Clock,
-  CalendarDays,
-  Timer,
-  LogOut,
-  Settings,
-  HelpCircle,
-  Layers,
-  Users,
-  FileText,
+  LayoutDashboard, Clock, CalendarDays, Timer,
+  LogOut, Layers, Users, FileText,
 } from "lucide-react";
 
 const Sidebar = ({ activePage, setActivePage }) => {
-  const { user } = useSelector((state) => state.auth);
+  const { user }       = useSelector((state) => state.auth);
   const { handleLogout } = useAuth();
 
   const employeeLinks = [
-    { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    { key: "punch", label: "Attendance", icon: <Clock size={18} /> },
-    { key: "attendance", label: "My History", icon: <CalendarDays size={18} /> },
-    { key: "overtime", label: "Overtime", icon: <Timer size={18} /> },
-    { key: "report", label: "My Report", icon: <FileText size={18} /> },
+    { key: "dashboard",  label: "Dashboard",  icon: LayoutDashboard },
+    { key: "punch",      label: "Attendance", icon: Clock },
+    { key: "attendance", label: "My History", icon: CalendarDays },
+    { key: "overtime",   label: "Overtime",   icon: Timer },
+    { key: "report",     label: "My Report",  icon: FileText },
   ];
 
   const managerLinks = [
-    { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    { key: "team", label: "Team Attendance", icon: <CalendarDays size={18} /> },
-    { key: "overtime", label: "Pending Overtime", icon: <Timer size={18} /> },
-    { key: "report", label: "Team Report", icon: <FileText size={18} /> },
+    { key: "dashboard",  label: "Dashboard",        icon: LayoutDashboard },
+    { key: "team",       label: "Team Attendance",  icon: CalendarDays },
+    { key: "overtime",   label: "Pending Overtime", icon: Timer },
+    { key: "report",     label: "Team Report",      icon: FileText },
   ];
 
   const adminLinks = [
-    { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    { key: "attendance", label: "All Attendance", icon: <CalendarDays size={18} /> },
-    { key: "users", label: "All Users", icon: <Users size={18} /> },
-    { key: "overtime", label: "Pending Overtime", icon: <Timer size={18} /> },
-    { key: "report", label: "Reports", icon: <FileText size={18} /> },
+    { key: "dashboard",  label: "Dashboard",        icon: LayoutDashboard },
+    { key: "attendance", label: "All Attendance",   icon: CalendarDays },
+    { key: "users",      label: "All Users",        icon: Users },
+    { key: "overtime",   label: "Pending Overtime", icon: Timer },
+    { key: "report",     label: "Reports",          icon: FileText },
   ];
 
   const links =
-    user?.role === "admin"
-      ? adminLinks
-      : user?.role === "manager"
-      ? managerLinks
-      : employeeLinks;
+    user?.role === "admin"   ? adminLinks :
+    user?.role === "manager" ? managerLinks :
+    employeeLinks;
 
   return (
-    <aside className="w-64 min-h-screen flex flex-col bg-[var(--color-bg-main)] border-r border-[var(--color-border-subtle)]">
-      {/* Brand */}
-      <div className="flex items-center gap-3 px-8 py-8 mb-4">
-        <div className="w-8 h-8 rounded flex items-center justify-center bg-[var(--color-accent-primary)] bg-opacity-20">
-          <Layers size={18} className="text-[var(--color-accent-primary)]" strokeWidth={2.5} />
+    <aside
+      className="flex flex-col"
+      style={{
+        width: 220,
+        minHeight: "100vh",
+        background: "var(--color-bg-sidebar)",
+        borderRight: "1px solid var(--color-border-subtle)",
+        /* Metric Flow: sidebar feels separate from content */
+      }}
+    >
+      {/* ── Brand ── */}
+      <div style={{ padding: "28px 20px 24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 9,
+            background: "var(--color-accent-primary)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 14px rgba(249,115,22,0.35)",
+          }}>
+            <Layers size={17} color="#fff" strokeWidth={2.5} />
+          </div>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "#fff", letterSpacing: "-0.2px" }}>
+            Aether Flow
+          </span>
         </div>
-        <span className="text-lg font-bold text-white tracking-wide">Aether Flow</span>
       </div>
 
-      {/* Nav Links */}
-      <nav className="flex-1 px-4 space-y-1">
-        {links.map((link) => {
-          const isActive = activePage === link.key;
+      {/* ── Nav ── */}
+      {/* Section label like Metric Flow */}
+      <div style={{ padding: "0 16px 8px" }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: "var(--color-text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          Main Menu
+        </span>
+      </div>
+
+      <nav style={{ flex: 1, padding: "0 10px", display: "flex", flexDirection: "column", gap: 2 }}>
+        {links.map(({ key, label, icon: Icon }) => {
+          const active = activePage === key;
           return (
             <button
-              key={link.key}
-              onClick={() => setActivePage(link.key)}
-              className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-[var(--color-bg-card)] text-[var(--color-accent-primary)]"
-                  : "text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-card-hover)]"
-              }`}
+              key={key}
+              onClick={() => setActivePage(key)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 11,
+                padding: "10px 12px",
+                borderRadius: 9,
+                border: "none",
+                cursor: "pointer",
+                fontSize: 13.5,
+                fontWeight: active ? 600 : 500,
+                letterSpacing: "-0.1px",
+                width: "100%",
+                textAlign: "left",
+                transition: "all 0.15s",
+                background: active ? "var(--color-accent-primary)" : "transparent",
+                color: active ? "#fff" : "var(--color-text-secondary)",
+                boxShadow: active ? "0 3px 10px rgba(249,115,22,0.25)" : "none",
+              }}
             >
-              {link.icon}
-              {link.label}
+              <Icon size={16} strokeWidth={active ? 2.5 : 2} />
+              {label}
             </button>
           );
         })}
       </nav>
 
-      {/* Bottom Nav / User Settings */}
-      <div className="px-4 pb-8 space-y-1">
-        {/* <button
-          className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-card-hover)] transition-all"
-        >
-          <Settings size={18} />
-          Settings
-        </button> */}
-        {/* <button
-          className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-card-hover)] transition-all mb-4"
-        >
-          <HelpCircle size={18} />
-          Help Center
-        </button> */}
+      {/* ── Preference section label ── */}
+      <div style={{ padding: "16px 16px 8px" }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: "var(--color-text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          Preference
+        </span>
+      </div>
 
-        <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)]">
-           {/* User Profile Card */}
-           <div className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)]">
-             <div className="w-9 h-9 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-sm text-white bg-[var(--color-accent-primary)] ring-2 ring-[var(--color-accent-primary)]/20 shadow-sm">
-               {user?.name?.charAt(0).toUpperCase() || "U"}
-             </div>
-             <div className="flex-1 min-w-0">
-               <p className="text-sm font-bold text-white truncate">{user?.name || "User"}</p>
-               <p className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-bold truncate mt-0.5">{user?.role || "Role"}</p>
-             </div>
-           </div>
-
-           <button
-             onClick={handleLogout}
-             className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium text-[var(--color-accent-danger)] hover:bg-[var(--color-accent-danger)]/10 transition-all border border-transparent hover:border-[var(--color-accent-danger)]/20"
-           >
-             <LogOut size={18} />
-             Sign Out
-           </button>
+      {/* ── Bottom ── */}
+      <div style={{ padding: "0 10px 24px", display: "flex", flexDirection: "column", gap: 2 }}>
+        {/* User card */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "10px 12px", marginBottom: 4,
+          borderRadius: 9,
+          background: "var(--color-bg-inner)",
+          border: "1px solid var(--color-border-subtle)",
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "var(--color-accent-primary)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0,
+          }}>
+            {user?.name?.charAt(0).toUpperCase() || "U"}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user?.name || "User"}
+            </p>
+            <p style={{ fontSize: 10, fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+              {user?.role || "Role"}
+            </p>
+          </div>
         </div>
+
+        {/* Sign out */}
+        <button
+          onClick={handleLogout}
+          style={{
+            display: "flex", alignItems: "center", gap: 11,
+            padding: "10px 12px", borderRadius: 9,
+            border: "none", cursor: "pointer",
+            fontSize: 13.5, fontWeight: 500, width: "100%", textAlign: "left",
+            background: "transparent",
+            color: "var(--color-accent-danger)",
+            transition: "background 0.15s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.08)"}
+          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
       </div>
     </aside>
   );

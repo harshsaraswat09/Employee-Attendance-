@@ -1,27 +1,38 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @theme {
-  --color-bg-main: #141414;
-  --color-bg-card: #1c1c1c;
-  --color-bg-card-hover: #222222;
-  --color-border-subtle: #2a2a2a;
-  
-  --color-accent-primary: #ff5722;
-  --color-accent-secondary: #6366f1;
-  --color-accent-success: #10b981;
-  --color-accent-danger: #ef4444;
-  --color-accent-warning: #f59e0b;
+  /* ── Backgrounds ── */
+  --color-bg-main:        #0a0a0a;   /* True black — Metric Flow bg */
+  --color-bg-sidebar:     #0f0f0f;   /* Sidebar slightly lighter than bg */
+  --color-bg-card:        #161616;   /* Cards float on top */
+  --color-bg-card-hover:  #1c1c1c;
+  --color-bg-inner:       #111111;   /* Inner nested bg */
 
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #888888;
-  --color-text-muted: #555555;
+  /* ── Borders ── */
+  --color-border-subtle:  #222222;
+  --color-border-hover:   #2e2e2e;
+
+  /* ── Accent / Brand ── */
+  --color-accent-primary:    #f97316;
+  --color-accent-hover:      #ea6c0a;
+  --color-accent-secondary:  #6366f1;
+  --color-accent-success:    #22c55e;
+  --color-accent-danger:     #ef4444;
+  --color-accent-warning:    #f59e0b;
+
+  /* ── Text ── */
+  --color-text-primary:   #ffffff;
+  --color-text-secondary: #8a8a8a;
+  --color-text-muted:     #444444;
 
   --font-inter: 'Inter', sans-serif;
 }
 
+/* ── Base ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  margin: 0;
   font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -29,21 +40,26 @@ body {
   color: var(--color-text-primary);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Card primitive ── */
+.metric-card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  padding: 20px 22px;
+  transition: border-color 0.2s ease;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-bg-main);
-}
+/* ── Scrollbar ── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #2a2a2a; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #383838; }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-subtle);
-  border-radius: 10px;
+/* ── Date input ── */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5); cursor: pointer;
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+select option {
+  background-color: var(--color-bg-card);
+  color: #fff;
 }
