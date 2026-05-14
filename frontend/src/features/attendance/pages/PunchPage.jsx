@@ -89,25 +89,46 @@ const PunchPage = () => {
   const hasPunchedOut = !!todayRecord?.punchOut?.time;
 
   return (
-    <div className="min-h-screen p-8" style={{ backgroundColor: "#0a0a0a" }}>
-      <h2 className="text-2xl font-bold text-white mb-1">Attendance</h2>
-      <p className="text-sm mb-6" style={{ color: "#888888" }}>
-        {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-      </p>
+    <div className="min-h-screen p-8 bg-[var(--color-bg-main)]">
+      <div className="mb-8">
+          <h2 className="text-3xl font-bold text-white tracking-wide mb-2">Attendance</h2>
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          </p>
+      </div>
 
       {/* Today Status */}
-      <div className="rounded-2xl p-5 mb-6" style={{ backgroundColor: "#111111", border: "1px solid #1f1f1f" }}>
-        <p className="text-xs font-semibold mb-3" style={{ color: "#888888" }}>Today's Status</p>
-        <div className="grid grid-cols-4 gap-4">
+      <div className="metric-card shadow-sm border border-[var(--color-border-subtle)] mb-8">
+        <p className="text-[10px] font-bold mb-4 text-[var(--color-text-secondary)] uppercase tracking-wider">Today's Status</p>
+        
+        {/* Shift Progress Bar */}
+        {hasPunchedIn && !hasPunchedOut && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Shift Progress (8h Target)</span>
+              <span className="text-sm font-bold text-[var(--color-accent-primary)]">
+                {todayRecord.workingHours ? Math.min(100, (todayRecord.workingHours / 8 * 100)).toFixed(1) : "0"}%
+              </span>
+            </div>
+            <div className="h-2 w-full rounded-full overflow-hidden bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)]">
+              <div 
+                className="h-full transition-all duration-1000 bg-[var(--color-accent-primary)] shadow-[0_0_10px_rgba(255,87,34,0.3)]" 
+                style={{ width: `${Math.min(100, (todayRecord.workingHours / 8 * 100))}%` }} 
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { label: "Punch In", value: todayRecord?.punchIn?.time ? new Date(todayRecord.punchIn.time).toLocaleTimeString() : "--:--" },
             { label: "Punch Out", value: todayRecord?.punchOut?.time ? new Date(todayRecord.punchOut.time).toLocaleTimeString() : "--:--" },
             { label: "Working Hours", value: todayRecord?.workingHours ? `${todayRecord.workingHours}h` : "--" },
             { label: "Status", value: todayRecord?.status || "not started" },
           ].map((item) => (
-            <div key={item.label}>
-              <p className="text-xs mb-1" style={{ color: "#888888" }}>{item.label}</p>
-              <p className="text-sm font-semibold text-white capitalize">{item.value}</p>
+            <div key={item.label} className="bg-[var(--color-bg-main)] rounded-xl p-4 border border-[var(--color-border-subtle)]">
+              <p className="text-[10px] font-bold mb-1.5 text-[var(--color-text-muted)] uppercase tracking-wider">{item.label}</p>
+              <p className="text-lg font-bold text-white capitalize">{item.value}</p>
             </div>
           ))}
         </div>
@@ -115,76 +136,72 @@ const PunchPage = () => {
 
       {/* Success / Error */}
       {successMsg && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4 text-sm"
-          style={{ backgroundColor: "#1a2e0a", border: "1px solid #2a4a10", color: "#c8f135" }}
-        >
-          <CheckCircle size={16} /> {successMsg}
+        <div className="flex items-center gap-3 px-5 py-4 rounded-xl mb-6 text-sm border bg-[var(--color-accent-success)]/10 border-[var(--color-accent-success)]/20 text-[var(--color-accent-success)]">
+          <CheckCircle size={18} /> <span className="font-medium">{successMsg}</span>
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl mb-4 text-sm"
-          style={{ backgroundColor: "#2e0a0a", border: "1px solid #4a1010", color: "#f87171" }}
-        >
-          <XCircle size={16} /> {error}
+        <div className="flex items-center gap-3 px-5 py-4 rounded-xl mb-6 text-sm border bg-[var(--color-accent-danger)]/10 border-[var(--color-accent-danger)]/20 text-[var(--color-accent-danger)]">
+          <XCircle size={18} /> <span className="font-medium">{error}</span>
         </div>
       )}
 
       {hasPunchedOut ? (
-        <div className="rounded-2xl p-10 text-center" style={{ backgroundColor: "#111111", border: "1px solid #1f1f1f" }}>
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: "#1a2e0a" }}
-          >
-            <CheckCircle size={32} style={{ color: "#c8f135" }} />
+        <div className="metric-card p-12 text-center flex flex-col items-center shadow-sm border border-[var(--color-border-subtle)]">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-[var(--color-accent-success)]/10 ring-4 ring-[var(--color-accent-success)]/5">
+            <CheckCircle size={40} className="text-[var(--color-accent-success)]" />
           </div>
-          <p className="text-white font-semibold text-lg">Attendance completed for today!</p>
-          <p className="text-sm mt-1" style={{ color: "#888888" }}>
-            You worked {todayRecord.workingHours} hours today.
+          <p className="text-white font-bold text-2xl mb-2">Attendance completed for today!</p>
+          <p className="text-base text-[var(--color-text-secondary)]">
+            You worked <strong className="text-white">{todayRecord.workingHours}</strong> hours today.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* Camera Card */}
-          <div className="rounded-2xl p-6" style={{ backgroundColor: "#111111", border: "1px solid #1f1f1f" }}>
-            <div className="flex items-center gap-2 mb-4">
-              <Camera size={16} style={{ color: "#c8f135" }} />
-              <p className="text-sm font-semibold text-white">Selfie Capture</p>
+          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)]">
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="p-1.5 rounded bg-[var(--color-accent-secondary)]/10">
+                <Camera size={16} className="text-[var(--color-accent-secondary)]" />
+              </div>
+              <p className="text-base font-bold text-white tracking-wide">Selfie Capture</p>
             </div>
 
-            {cameraActive && (
-              <video ref={videoRef} autoPlay playsInline
-                className="w-full rounded-xl mb-3"
-                style={{ border: "1px solid #2a2a2a" }}
-              />
-            )}
-            {selfie && (
-              <img src={selfie} alt="Captured"
-                className="w-full rounded-xl mb-3"
-                style={{ border: "1px solid #2a2a2a" }}
-              />
-            )}
-            <canvas ref={canvasRef} className="hidden" />
+            <div className="aspect-video bg-[var(--color-bg-main)] rounded-xl border border-[var(--color-border-subtle)] flex items-center justify-center overflow-hidden mb-5">
+                {cameraActive && (
+                <video ref={videoRef} autoPlay playsInline
+                    className="w-full h-full object-cover"
+                />
+                )}
+                {selfie && (
+                <img src={selfie} alt="Captured"
+                    className="w-full h-full object-cover"
+                />
+                )}
+                {!cameraActive && !selfie && (
+                    <Camera size={32} className="text-[var(--color-text-muted)] opacity-50" />
+                )}
+                <canvas ref={canvasRef} className="hidden" />
+            </div>
 
-            <div className="flex gap-3 mt-2">
+            <div className="flex gap-3">
               {!cameraActive && !selfie && (
                 <button onClick={startCamera}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-black transition hover:opacity-90"
-                  style={{ backgroundColor: "#c8f135" }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-[var(--color-accent-secondary)]/20 active:scale-[0.98] bg-[var(--color-accent-secondary)] hover:bg-[#4f46e5]"
                 >
-                  <Camera size={16} /> Open Camera
+                  <Camera size={18} /> Open Camera
                 </button>
               )}
               {cameraActive && (
                 <>
                   <button onClick={captureSelfie}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-black transition hover:opacity-90"
-                    style={{ backgroundColor: "#c8f135" }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-[var(--color-accent-secondary)]/20 active:scale-[0.98] bg-[var(--color-accent-secondary)] hover:bg-[#4f46e5]"
                   >
-                    <Camera size={16} /> Capture
+                    <Camera size={18} /> Capture
                   </button>
                   <button onClick={stopCamera}
-                    className="px-4 py-2.5 rounded-xl text-sm font-medium transition"
-                    style={{ backgroundColor: "#1a1a1a", color: "#888888" }}
+                    className="px-6 py-3.5 rounded-xl text-sm font-bold transition-colors bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:text-white hover:bg-white/5"
                   >
                     Cancel
                   </button>
@@ -192,60 +209,57 @@ const PunchPage = () => {
               )}
               {selfie && (
                 <button onClick={startCamera}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium transition"
-                  style={{ backgroundColor: "#1a1a1a", color: "#888888" }}
+                  className="w-full px-4 py-3.5 rounded-xl text-sm font-bold transition-colors bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:text-white hover:bg-white/5"
                 >
-                  Retake
+                  Retake Selfie
                 </button>
               )}
             </div>
           </div>
 
           {/* Location + Punch Card */}
-          <div className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: "#111111", border: "1px solid #1f1f1f" }}>
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin size={16} style={{ color: "#c8f135" }} />
-              <p className="text-sm font-semibold text-white">Location</p>
+          <div className="metric-card flex flex-col shadow-sm border border-[var(--color-border-subtle)]">
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="p-1.5 rounded bg-[var(--color-accent-warning)]/10">
+                 <MapPin size={16} className="text-[var(--color-accent-warning)]" />
+              </div>
+              <p className="text-base font-bold text-white tracking-wide">Location Verification</p>
             </div>
 
             {location ? (
-              <div className="px-4 py-3 rounded-xl text-sm mb-4"
-                style={{ backgroundColor: "#1a2e0a", border: "1px solid #2a4a10", color: "#c8f135" }}
-              >
-                ✅ Lat: {location.lat.toFixed(4)}, Lng: {location.lng.toFixed(4)}
+              <div className="px-5 py-4 rounded-xl text-sm mb-6 flex items-center gap-3 bg-[var(--color-accent-success)]/10 border border-[var(--color-accent-success)]/20 text-[var(--color-accent-success)]">
+                <CheckCircle size={18} /> 
+                <span className="font-medium">Verified: Lat {location.lat.toFixed(4)}, Lng {location.lng.toFixed(4)}</span>
               </div>
             ) : (
               <button onClick={captureLocation}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium mb-4 transition w-fit"
-                style={{ backgroundColor: "#1a1a1a", color: "#888888", border: "1px solid #2a2a2a" }}
+                className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl text-sm font-bold mb-6 transition-colors bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:text-white hover:bg-white/5"
               >
-                <MapPin size={16} /> Capture Location
+                <MapPin size={18} /> Detect Location
               </button>
             )}
             {locationError && (
-              <p className="text-xs mb-4" style={{ color: "#f87171" }}>{locationError}</p>
+              <p className="text-xs mb-6 font-medium text-[var(--color-accent-danger)]">{locationError}</p>
             )}
 
-            <div className="mt-auto">
-              <div className="flex items-center justify-center mb-4">
-                <Fingerprint size={48} style={{ color: hasPunchedIn ? "#f87171" : "#c8f135" }} />
+            <div className="mt-auto bg-[var(--color-bg-main)] rounded-2xl p-6 border border-[var(--color-border-subtle)] flex flex-col items-center">
+              <div className="flex items-center justify-center mb-6">
+                <Fingerprint size={56} className={hasPunchedIn ? "text-[var(--color-accent-danger)]" : "text-[var(--color-accent-primary)]"} />
               </div>
               {!hasPunchedIn && (
                 <button onClick={handlePunchInClick}
                   disabled={loading || !selfie || !location}
-                  className="w-full py-3 rounded-xl font-semibold text-sm text-black transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: "#c8f135" }}
+                  className="w-full py-4 rounded-xl font-bold text-sm text-white transition-all shadow-lg active:scale-[0.98] bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-hover)] shadow-[var(--color-accent-primary)]/20 disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none"
                 >
-                  {loading ? "Processing..." : "Punch In"}
+                  {loading ? "Processing..." : "PUNCH IN NOW"}
                 </button>
               )}
               {hasPunchedIn && !hasPunchedOut && (
                 <button onClick={handlePunchOutClick}
                   disabled={loading || !selfie || !location}
-                  className="w-full py-3 rounded-xl font-semibold text-sm text-white transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: "#dc2626" }}
+                  className="w-full py-4 rounded-xl font-bold text-sm text-white transition-all shadow-lg active:scale-[0.98] bg-[var(--color-accent-danger)] hover:bg-red-600 shadow-[var(--color-accent-danger)]/20 disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none"
                 >
-                  {loading ? "Processing..." : "Punch Out"}
+                  {loading ? "Processing..." : "PUNCH OUT NOW"}
                 </button>
               )}
             </div>

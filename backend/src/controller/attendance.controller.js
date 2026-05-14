@@ -2,6 +2,8 @@ import { validationResult } from "express-validator";
 import Attendance from "../model/attendance.model.js";
 import User from "../model/user.model.js";
 
+import { config } from "../config/config.js";
+
 const getTodayDate = () => new Date().toISOString().split("T")[0];
 
 const calcWorkingHours = (punchIn, punchOut) => {

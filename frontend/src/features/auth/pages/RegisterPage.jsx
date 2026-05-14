@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Asterisk } from "lucide-react";
 import { useAuth } from "../hook/useAuth.js";
 import { useSelector } from "react-redux";
+import { getManagersList } from "../../dashboard/service/user.api.js";
 import "./RegisterPage.css";
 
 const RegisterPage = () => {
@@ -19,7 +20,20 @@ const RegisterPage = () => {
     managerId: "",
   });
 
+  const [managers, setManagers] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const res = await getManagersList();
+        setManagers(res.data);
+      } catch (err) {
+        console.error("Failed to fetch managers", err);
+      }
+    };
+    fetchManagers();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -125,6 +139,27 @@ const RegisterPage = () => {
                   />
                 </div>
               </div>
+
+              {formData.role === "employee" && (
+                <div className="form-group full-width">
+                  <label>Reporting Manager</label>
+                  <div className="input-wrapper">
+                    <select
+                      name="managerId"
+                      value={formData.managerId}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Manager</option>
+                      {managers.map((m) => (
+                        <option key={m._id} value={m._id}>
+                          {m.name} ({m.department || "No Dept"})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div className="form-group full-width">
                 <label>Password</label>

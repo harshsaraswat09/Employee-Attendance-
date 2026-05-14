@@ -2,6 +2,7 @@ import express from "express";
 import {
   getAllUsers,
   getUserById,
+  getManagers,
 } from "../controller/user.controller.js";
 import {
   authMiddleware,
@@ -9,6 +10,8 @@ import {
 } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
+
+router.get("/managers", getManagers);
 
 router.use(authMiddleware);
 

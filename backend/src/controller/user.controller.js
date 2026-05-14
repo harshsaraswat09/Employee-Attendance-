@@ -13,6 +13,15 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const getManagers = async (req, res) => {
+  try {
+    const managers = await User.find({ role: { $in: ["manager", "admin"] } }).select("name email department");
+    return res.status(200).json({ success: true, data: managers });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
