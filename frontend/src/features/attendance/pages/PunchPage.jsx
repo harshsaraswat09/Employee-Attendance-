@@ -41,6 +41,15 @@ const PunchPage = () => {
     setCameraActive(false);
   };
 
+  const captureLocation = () => {
+    setLocationError(null);
+    if (!navigator.geolocation) return setLocationError("Geolocation not supported");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setLocationError("Location access denied.")
+    );
+  };
+
   const captureSelfie = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -61,15 +70,9 @@ const PunchPage = () => {
     // Use high compression to avoid large payload/broken image issues
     setSelfie(canvas.toDataURL("image/jpeg", 0.6));
     stopCamera();
-  };
 
-  const captureLocation = () => {
-    setLocationError(null);
-    if (!navigator.geolocation) return setLocationError("Geolocation not supported");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setLocationError("Location access denied.")
-    );
+    // Auto-fetch location as soon as selfie is captured
+    captureLocation();
   };
 
   const handlePunchInClick = async () => {
@@ -237,18 +240,29 @@ const PunchPage = () => {
 
             {location ? (
               <div className="px-5 py-4 rounded-xl text-sm mb-6 flex items-center gap-3 bg-[var(--color-accent-success)]/10 border border-[var(--color-accent-success)]/20 text-[var(--color-accent-success)]">
-                <CheckCircle size={18} /> 
+                <CheckCircle size={18} />
                 <span className="font-medium">Verified: Lat {location.lat.toFixed(4)}, Lng {location.lng.toFixed(4)}</span>
               </div>
+            ) : selfie && !locationError ? (
+              <div className="px-5 py-4 rounded-xl text-sm mb-6 flex items-center gap-3 bg-[var(--color-accent-warning)]/10 border border-[var(--color-accent-warning)]/20 text-[var(--color-accent-warning)]">
+                <MapPin size={18} className="animate-pulse" />
+                <span className="font-medium">Fetching your location...</span>
+              </div>
             ) : (
-              <button onClick={captureLocation}
-                className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl text-sm font-bold mb-6 transition-colors bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:text-white hover:bg-white/5"
-              >
-                <MapPin size={18} /> Detect Location
-              </button>
+              <div className="px-5 py-4 rounded-xl text-sm mb-6 flex items-center gap-3 bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)]">
+                <MapPin size={18} />
+                <span className="font-medium">Location will auto-detect on selfie capture</span>
+              </div>
             )}
             {locationError && (
-              <p className="text-xs mb-6 font-medium text-[var(--color-accent-danger)]">{locationError}</p>
+              <div className="mb-6 flex flex-col gap-2">
+                <p className="text-xs font-medium text-[var(--color-accent-danger)]">{locationError}</p>
+                <button onClick={captureLocation}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-bold transition-colors bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:text-white hover:bg-white/5"
+                >
+                  <MapPin size={16} /> Retry Location
+                </button>
+              </div>
             )}
 
             <div className="mt-auto bg-[var(--color-bg-main)] rounded-2xl p-6 border border-[var(--color-border-subtle)] flex flex-col items-center">
