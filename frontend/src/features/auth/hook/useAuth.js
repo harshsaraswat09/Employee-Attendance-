@@ -9,11 +9,13 @@ export const useAuth = () => {
     try {
       dispatch(setLoading(true));
       const response = await registerUser({ name, email, password, role, department, managerId });
-      dispatch(setUser(response.data.user));
-      dispatch(setToken(response.data.token));
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      return response.data.user;
+      // response = { success: true, data: { token, user } }
+      const { token, user } = response.data;
+      dispatch(setUser(user));
+      dispatch(setToken(token));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      return user;
     } catch (err) {
       dispatch(setError(err.response?.data?.message || "Registration failed"));
       throw err;
@@ -26,11 +28,13 @@ export const useAuth = () => {
     try {
       dispatch(setLoading(true));
       const response = await loginUser({ email, password });
-      dispatch(setUser(response.data.user));
-      dispatch(setToken(response.data.token));
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      return response.data.user;
+      // response = { success: true, data: { token, user } }
+      const { token, user } = response.data;
+      dispatch(setUser(user));
+      dispatch(setToken(token));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      return user;
     } catch (err) {
       dispatch(setError(err.response?.data?.message || "Login failed"));
       throw err;
@@ -43,10 +47,16 @@ export const useAuth = () => {
     try {
       dispatch(setLoading(true));
       const response = await getUser();
-      dispatch(setUser(response.data));
-      return response.data;
+      // Backend returns { success: true, data: user }
+      // auth.api.js returns axios response, so response.data = { success, data: user }
+      const user = response.data?.data || response.data;
+      dispatch(setUser(user));
+      return user;
     } catch (err) {
-      dispatch(setError(err.response?.data?.message || "Failed to get user"));
+      // Token is invalid or expired — clear it so user is redirected to login
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      dispatch(setError(err.response?.data?.message || "Session expired. Please login again."));
     } finally {
       dispatch(setLoading(false));
     }

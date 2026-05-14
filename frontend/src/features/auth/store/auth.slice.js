@@ -5,7 +5,7 @@ const authSlice = createSlice({
   initialState: {
     user: null,
     token: null,
-    loading: false,
+    loading: true,  // true on start so ProtectedRoute waits for token check
     error: null,
   },
   reducers: {

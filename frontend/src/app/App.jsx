@@ -5,6 +5,7 @@ import store from "./app.store.js";
 import AppRoutes from "./app.routes.jsx";
 import "./App.css";
 import { useAuth } from "../features/auth/hook/useAuth.js";
+import { setLoading } from "../features/auth/store/auth.slice.js";
 
 const AppContent = () => {
   const { handleGetMe } = useAuth();
@@ -14,7 +15,8 @@ const AppContent = () => {
     if (token) {
       handleGetMe();
     } else {
-      store.dispatch({ type: "auth/setLoading", payload: false });
+      // No token — stop loading immediately so ProtectedRoute can redirect
+      store.dispatch(setLoading(false));
     }
   }, []);
 
