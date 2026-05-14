@@ -45,10 +45,21 @@ const PunchPage = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      alert("Camera is still initializing, please wait a moment.");
+      return;
+    }
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    setSelfie(canvas.toDataURL("image/jpeg"));
+    const ctx = canvas.getContext("2d");
+    
+    // Flip canvas horizontally to match the mirrored video preview
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+    
+    // Use high compression to avoid large payload/broken image issues
+    setSelfie(canvas.toDataURL("image/jpeg", 0.6));
     stopCamera();
   };
 
@@ -121,8 +132,8 @@ const PunchPage = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { label: "Punch In", value: todayRecord?.punchIn?.time ? new Date(todayRecord.punchIn.time).toLocaleTimeString() : "--:--" },
-            { label: "Punch Out", value: todayRecord?.punchOut?.time ? new Date(todayRecord.punchOut.time).toLocaleTimeString() : "--:--" },
+            { label: "Punch In", value: todayRecord?.punchIn?.time ? new Date(todayRecord.punchIn.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "--:--" },
+            { label: "Punch Out", value: todayRecord?.punchOut?.time ? new Date(todayRecord.punchOut.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "--:--" },
             { label: "Working Hours", value: todayRecord?.workingHours ? `${todayRecord.workingHours}h` : "--" },
             { label: "Status", value: todayRecord?.status || "not started" },
           ].map((item) => (
@@ -169,12 +180,10 @@ const PunchPage = () => {
             </div>
 
             <div className="aspect-video bg-[var(--color-bg-main)] rounded-xl border border-[var(--color-border-subtle)] flex items-center justify-center overflow-hidden mb-5">
-                {cameraActive && (
                 <video ref={videoRef} autoPlay playsInline
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover -scale-x-100 ${cameraActive ? "block" : "hidden"}`}
                 />
-                )}
-                {selfie && (
+                {selfie && !cameraActive && (
                 <img src={selfie} alt="Captured"
                     className="w-full h-full object-cover"
                 />

@@ -80,23 +80,34 @@ const Sidebar = ({ activePage, setActivePage }) => {
 
       {/* Bottom Nav / User Settings */}
       <div className="px-4 pb-8 space-y-1">
-        <button
+        {/* <button
           className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-card-hover)] transition-all"
         >
           <Settings size={18} />
           Settings
-        </button>
-        <button
+        </button> */}
+        {/* <button
           className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-card-hover)] transition-all mb-4"
         >
           <HelpCircle size={18} />
           Help Center
-        </button>
+        </button> */}
 
         <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)]">
+           {/* User Profile Card */}
+           <div className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl bg-[var(--color-bg-main)] border border-[var(--color-border-subtle)]">
+             <div className="w-9 h-9 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-sm text-white bg-[var(--color-accent-primary)] ring-2 ring-[var(--color-accent-primary)]/20 shadow-sm">
+               {user?.name?.charAt(0).toUpperCase() || "U"}
+             </div>
+             <div className="flex-1 min-w-0">
+               <p className="text-sm font-bold text-white truncate">{user?.name || "User"}</p>
+               <p className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-wider font-bold truncate mt-0.5">{user?.role || "Role"}</p>
+             </div>
+           </div>
+
            <button
              onClick={handleLogout}
-             className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:text-white hover:bg-[var(--color-bg-card-hover)] transition-all"
+             className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium text-[var(--color-accent-danger)] hover:bg-[var(--color-accent-danger)]/10 transition-all border border-transparent hover:border-[var(--color-accent-danger)]/20"
            >
              <LogOut size={18} />
              Sign Out
