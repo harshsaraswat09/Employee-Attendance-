@@ -7,257 +7,347 @@ import PendingOvertimePage from "../../overtime/pages/PendingOvertimePage.jsx";
 import { useAttendance } from "../../attendance/hook/useAttendance.js";
 import { useOvertime } from "../../overtime/hook/useOvertime.js";
 import {
-  Users,
-  CalendarDays,
-  Timer,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  ArrowRight,
-  TrendingUp,
+  Users, Timer, CheckCircle2,
+  AlertCircle, TrendingUp, Search,
+  ArrowRight, ShieldCheck,
 } from "lucide-react";
 
+/* ── colours — mirrors EmployeeDashboard ── */
+const C = {
+  bg:     "var(--color-bg-main)",
+  card:   "var(--color-bg-card)",
+  inner:  "var(--color-bg-inner)",
+  border: "var(--color-border-subtle)",
+  orange: "var(--color-accent-primary)",
+  indigo: "var(--color-accent-secondary)",
+  green:  "var(--color-accent-success)",
+  yellow: "var(--color-accent-warning)",
+  red:    "var(--color-accent-danger)",
+  t1:     "var(--color-text-primary)",
+  t2:     "var(--color-text-secondary)",
+  tm:     "var(--color-text-muted)",
+};
+
+/* ── Stat card — exactly same as EmployeeDashboard ── */
+const StatCard = ({ label, value, sub, subColor, Icon, iconBg }) => (
+  <div
+    className="metric-card"
+    style={{ flex: 1, display: "flex", alignItems: "flex-start", gap: 16 }}
+  >
+    <div style={{
+      width: 44, height: 44, borderRadius: 11, flexShrink: 0,
+      background: iconBg, display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <Icon size={20} color={subColor || C.orange} />
+    </div>
+    <div>
+      <p style={{ fontSize: 11, fontWeight: 600, color: C.t2, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
+        {label}
+      </p>
+      <p style={{ fontSize: 26, fontWeight: 700, color: C.t1, lineHeight: 1, letterSpacing: "-0.5px" }}>
+        {value}
+      </p>
+      {sub && (
+        <p style={{ fontSize: 11, fontWeight: 500, color: subColor || C.t2, marginTop: 5 }}>
+          {sub}
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+/* ── ManagerHome ── */
 const ManagerHome = ({ setActivePage }) => {
-  const { teamRecords } = useSelector((state) => state.attendance);
-  const { pendingOvertimes } = useSelector((state) => state.overtime);
-  const { user } = useSelector((state) => state.auth);
+  const { teamRecords }      = useSelector((s) => s.attendance);
+  const { pendingOvertimes } = useSelector((s) => s.overtime);
+  const { user }             = useSelector((s) => s.auth);
 
   const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
+    weekday: "long", month: "long", day: "numeric",
   });
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const todayRecords = teamRecords.filter((r) => r.date === todayStr);
-  const presentToday = todayRecords.filter((r) => r.punchIn?.time).length;
-  const completedToday = todayRecords.filter((r) => r.status === "completed").length;
-  const pendingValidation = teamRecords.filter(
-    (r) => r.validationStatus === "pending"
-  ).length;
-  const pendingOTCount = pendingOvertimes.length;
+  const todayStr        = new Date().toISOString().split("T")[0];
+  const todayRecords    = teamRecords.filter((r) => r.date === todayStr);
+  const presentToday    = todayRecords.filter((r) => r.punchIn?.time).length;
+  const completedToday  = todayRecords.filter((r) => r.status === "completed").length;
+  const pendingOTCount  = pendingOvertimes.length;
+  const pendingValidation = teamRecords.filter((r) => r.validationStatus === "pending").length;
+
+  const GAP = 16;
+  const PAD = 28;
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-[var(--color-bg-main)]">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-[var(--color-border-subtle)]">
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh", background: C.bg }}>
+
+      {/* ── TOP BAR ── */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: `20px ${PAD}px`,
+        borderBottom: `1px solid ${C.border}`,
+        background: C.bg,
+      }}>
         <div>
-          <h2 className="text-2xl font-bold text-white tracking-wide">
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.3px" }}>
             Welcome back, {user?.name?.split(" ")[0]} 👋
           </h2>
-          <p className="text-sm mt-1 text-[var(--color-text-secondary)]">
-            {today}
-          </p>
+          <p style={{ fontSize: 13, color: C.t2, marginTop: 3 }}>{today}</p>
         </div>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm bg-[var(--color-accent-primary)] ring-2 ring-white/10 shadow-lg shadow-[var(--color-accent-primary)]/20">
-          {user?.name?.charAt(0).toUpperCase()}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "9px 16px", borderRadius: 999,
+            background: C.card, border: `1px solid ${C.border}`,
+          }}>
+            <Search size={14} color={C.t2} />
+            <input
+              type="text" placeholder="Search..."
+              style={{ background: "transparent", border: "none", outline: "none", fontSize: 13, color: C.t2, width: 160 }}
+            />
+          </div>
+          <div style={{
+            width: 38, height: 38, borderRadius: "50%",
+            background: C.orange, display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, fontWeight: 700, color: "#fff",
+            boxShadow: "0 0 0 3px rgba(249,115,22,0.15)",
+          }}>
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
         </div>
       </div>
 
-      <div className="p-8 space-y-6">
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            {
-              label: "Present Today",
-              value: presentToday,
-              icon: <Users size={16} className="text-[var(--color-accent-primary)]" />,
-              accent: "var(--color-accent-primary)",
-            },
-            {
-              label: "Shifts Completed",
-              value: completedToday,
-              icon: <CheckCircle size={16} className="text-[var(--color-accent-success)]" />,
-              accent: "var(--color-accent-success)",
-            },
-            {
-              label: "Pending Validation",
-              value: pendingValidation,
-              icon: <Clock size={16} className="text-[var(--color-accent-warning)]" />,
-              accent: "var(--color-accent-warning)",
-            },
-            {
-              label: "Overtime Requests",
-              value: pendingOTCount,
-              icon: <Timer size={16} className="text-[var(--color-accent-danger)]" />,
-              accent: "var(--color-accent-danger)",
-            },
-          ].map((stat) => (
-            <div key={stat.label} className="metric-card shadow-sm border border-[var(--color-border-subtle)]">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="p-1.5 rounded bg-white/5 border border-white/10">
-                   {stat.icon}
-                </div>
-                <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
-                  {stat.label}
-                </p>
-              </div>
-              <p className="text-3xl font-bold" style={{ color: stat.accent }}>
-                {stat.value}
-              </p>
-            </div>
-          ))}
-        </div>
+      {/* ── BODY ── */}
+      <div style={{ flex: 1, display: "flex", gap: GAP, padding: PAD }}>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Team Attendance Quick View */}
-          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)] flex flex-col h-[400px]">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded bg-[var(--color-accent-primary)]/10">
-                  <CalendarDays size={16} className="text-[var(--color-accent-primary)]" />
-                </div>
-                <p className="text-base font-bold text-white tracking-wide">Today's Team</p>
+        {/* ── LEFT (main) ── */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: GAP, minWidth: 0 }}>
+
+          {/* Stat cards row */}
+          <div style={{ display: "flex", gap: GAP }}>
+            <StatCard
+              label="Present Today" value={presentToday}
+              sub={`${completedToday} shifts completed`}
+              Icon={Users} subColor={C.orange}
+              iconBg="rgba(249,115,22,0.12)"
+            />
+            <StatCard
+              label="Shifts Completed" value={completedToday}
+              sub="↑ team on track today"
+              Icon={TrendingUp} subColor={C.green}
+              iconBg="rgba(34,197,94,0.12)"
+            />
+            <StatCard
+              label="Overtime Requests" value={pendingOTCount}
+              sub={pendingOTCount > 0 ? "Awaiting your approval" : "All clear"}
+              Icon={Timer} subColor={C.red}
+              iconBg="rgba(239,68,68,0.12)"
+            />
+          </div>
+
+          {/* Team Attendance Table */}
+          <div className="metric-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: C.t1 }}>Today's Team Attendance</p>
+                <p style={{ fontSize: 12, color: C.t2, marginTop: 3 }}>Live status of your team members</p>
               </div>
               <button
                 onClick={() => setActivePage("team")}
-                className="flex items-center gap-1 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-white transition-colors"
+                style={{ fontSize: 12, fontWeight: 600, color: C.orange, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
               >
-                View all <ArrowRight size={12} />
+                View All <ArrowRight size={12} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto pr-2">
+            <div style={{ overflowY: "auto", flex: 1 }}>
               {todayRecords.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full opacity-60">
-                  <AlertCircle size={32} className="mb-3 text-[var(--color-text-muted)]" />
-                  <p className="text-sm text-[var(--color-text-secondary)] font-medium">
-                    No records for today yet
-                  </p>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: 60, opacity: 0.6 }}>
+                  <AlertCircle size={32} color={C.tm} style={{ marginBottom: 12 }} />
+                  <p style={{ fontSize: 13, color: C.t2, fontWeight: 500 }}>No team records for today yet</p>
                 </div>
               ) : (
-                <table className="w-full text-left border-collapse">
-                    <tbody>
-                        {todayRecords.slice(0, 6).map((record) => (
-                          <tr key={record._id} className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-card-hover)] transition-colors">
-                            <td className="py-3 pl-2">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[var(--color-bg-main)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)]">
-                                    {(record.userId?.name || "?")[0].toUpperCase()}
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-semibold text-white">
-                                      {record.userId?.name || "Unknown"}
-                                    </p>
-                                    <p className="text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mt-0.5">
-                                      {record.workingHours ? `${record.workingHours}h worked` : "In progress"}
-                                    </p>
-                                  </div>
-                                </div>
-                            </td>
-                            <td className="py-3 pr-2 text-right">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex items-center justify-center w-fit ml-auto
-                                    ${record.status === 'completed' ? 'bg-[var(--color-accent-success)]/10 text-[var(--color-accent-success)]' : 'bg-[var(--color-accent-warning)]/10 text-[var(--color-accent-warning)]'}`}
-                                >
-                                  {record.status === "completed" ? "Done" : "Active"}
-                                </span>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                      {["EMPLOYEE", "PUNCH IN", "PUNCH OUT", "HOURS", "STATUS"].map((h, i) => (
+                        <th key={h} style={{
+                          paddingBottom: 10, fontSize: 10, fontWeight: 700,
+                          color: C.tm, letterSpacing: "0.08em",
+                          textAlign: i >= 3 ? "right" : "left",
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {todayRecords.slice(0, 7).map((r) => (
+                      <tr key={r._id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <td style={{ padding: "12px 0" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div style={{
+                              width: 30, height: 30, borderRadius: "50%",
+                              background: C.inner, border: `1px solid ${C.border}`,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 11, fontWeight: 700, color: C.t1, flexShrink: 0,
+                            }}>
+                              {(r.userId?.name || "?")[0].toUpperCase()}
+                            </div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>
+                              {r.userId?.name || "Unknown"}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px 0", fontSize: 13, color: C.t2 }}>
+                          {r.punchIn?.time ? new Date(r.punchIn.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
+                        </td>
+                        <td style={{ padding: "12px 0", fontSize: 13, color: C.t2 }}>
+                          {r.punchOut?.time ? new Date(r.punchOut.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}
+                        </td>
+                        <td style={{ padding: "12px 0", fontSize: 13, fontWeight: 600, color: C.t1, textAlign: "right" }}>
+                          {r.workingHours ? `${r.workingHours}h` : "—"}
+                        </td>
+                        <td style={{ padding: "12px 0", textAlign: "right" }}>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 5,
+                            background: r.status === "completed" ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
+                            color: r.status === "completed" ? C.green : C.yellow,
+                            textTransform: "uppercase", letterSpacing: "0.05em",
+                          }}>
+                            {r.status === "completed" ? "Done" : "Active"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               )}
             </div>
           </div>
+        </div>
 
-          {/* Pending Overtime Quick View */}
-          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)] flex flex-col h-[400px]">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded bg-[var(--color-accent-danger)]/10">
-                  <Timer size={16} className="text-[var(--color-accent-danger)]" />
-                </div>
-                <p className="text-base font-bold text-white tracking-wide">Overtime Requests</p>
+        {/* ── RIGHT PANEL ── */}
+        <div style={{ width: 268, display: "flex", flexDirection: "column", gap: GAP, flexShrink: 0 }}>
+
+          {/* Validation / Action card */}
+          <div className="metric-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", overflow: "hidden" }}>
+            <div style={{
+              position: "absolute", top: -40, right: -40,
+              width: 140, height: 140, borderRadius: "50%",
+              background: "rgba(249,115,22,0.08)", filter: "blur(30px)", pointerEvents: "none",
+            }} />
+
+            <div style={{
+              width: 64, height: 64, borderRadius: 16, marginBottom: 14,
+              background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <ShieldCheck size={28} color={C.orange} />
+            </div>
+
+            <p style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 6 }}>
+              {pendingValidation > 0 ? "Action Required" : "All Validated"}
+            </p>
+            <p style={{ fontSize: 12, color: C.t2, lineHeight: 1.6, marginBottom: pendingValidation > 0 ? 18 : 0 }}>
+              {pendingValidation > 0
+                ? `${pendingValidation} attendance record${pendingValidation > 1 ? "s" : ""} need your validation.`
+                : "Great! No pending validations right now."}
+            </p>
+
+            {pendingValidation > 0 && (
+              <button
+                onClick={() => setActivePage("team")}
+                style={{
+                  width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
+                  background: C.orange, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 4px 16px rgba(249,115,22,0.3)", transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--color-accent-hover)"}
+                onMouseLeave={e => e.currentTarget.style.background = C.orange}
+              >
+                Review Now
+              </button>
+            )}
+          </div>
+
+          {/* Overtime card */}
+          <div className="metric-card">
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(239,68,68,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Timer size={14} color={C.red} />
               </div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: C.t1 }}>Overtime Requests</p>
+            </div>
+            <p style={{ fontSize: 12, color: C.t2, lineHeight: 1.6, marginBottom: 16 }}>
+              {pendingOTCount > 0
+                ? `${pendingOTCount} request${pendingOTCount > 1 ? "s" : ""} awaiting your approval.`
+                : "No overtime requests pending at the moment."}
+            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{
+                fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em",
+                color: pendingOTCount > 0 ? C.red : C.tm,
+              }}>
+                {pendingOTCount > 0 ? `${pendingOTCount} Pending` : "No Requests"}
+              </span>
               <button
                 onClick={() => setActivePage("overtime")}
-                className="flex items-center gap-1 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-white transition-colors"
+                style={{
+                  fontSize: 12, fontWeight: 600, padding: "7px 14px", borderRadius: 8,
+                  background: C.inner, border: `1px solid ${C.border}`,
+                  color: C.t1, cursor: "pointer", transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
+                onMouseLeave={e => e.currentTarget.style.background = C.inner}
               >
-                View all <ArrowRight size={12} />
+                Manage
               </button>
             </div>
-
-            <div className="flex-1 overflow-auto pr-2">
-              {pendingOvertimes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full opacity-60">
-                  <CheckCircle size={32} className="mb-3 text-[var(--color-accent-success)]" />
-                  <p className="text-sm text-[var(--color-text-secondary)] font-medium">
-                    No pending overtime requests
-                  </p>
-                </div>
-              ) : (
-                <table className="w-full text-left border-collapse">
-                    <tbody>
-                        {pendingOvertimes.slice(0, 6).map((ot) => (
-                          <tr key={ot._id} className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-card-hover)] transition-colors">
-                            <td className="py-3 pl-2">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[var(--color-bg-main)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)]">
-                                    {(ot.userId?.name || "?")[0].toUpperCase()}
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-semibold text-white">
-                                      {ot.userId?.name || "Unknown"}
-                                    </p>
-                                    <p className="text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mt-0.5">
-                                      {ot.attendanceId?.date}
-                                    </p>
-                                  </div>
-                                </div>
-                            </td>
-                            <td className="py-3">
-                                <p className="text-xs font-bold text-[var(--color-accent-danger)]">{ot.requestedHours}h</p>
-                            </td>
-                            <td className="py-3 pr-2 text-right">
-                                <button
-                                  onClick={() => setActivePage("overtime")}
-                                  className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-main)] hover:bg-white/5 transition-colors text-white"
-                                >
-                                  Review
-                                </button>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                </table>
-              )}
-            </div>
           </div>
+
+          {/* Mini stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: GAP }}>
+            {[
+              { label: "Present",    value: presentToday,   color: C.green },
+              { label: "Pending OT", value: pendingOTCount, color: C.red   },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="metric-card" style={{ textAlign: "center", padding: "18px 12px" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: C.tm, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>
+                  {label}
+                </p>
+                <p style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{value}</p>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </div>
   );
 };
 
+/* ── Shell ── */
 const ManagerDashboard = () => {
-  const [activePage, setActivePage] = useState("dashboard");
-  const { handleGetTeamAttendance } = useAttendance();
-  const { handleGetPendingOvertimes } = useOvertime();
+  const [activePage, setActivePage]         = useState("dashboard");
+  const { handleGetTeamAttendance }         = useAttendance();
+  const { handleGetPendingOvertimes }       = useOvertime();
 
   useEffect(() => {
     handleGetTeamAttendance();
     handleGetPendingOvertimes();
   }, []);
 
-  const renderPage = () => {
+  const render = () => {
     switch (activePage) {
-      case "dashboard":
-        return <ManagerHome setActivePage={setActivePage} />;
-      case "team":
-        return <TeamAttendancePage />;
-      case "overtime":
-        return <PendingOvertimePage />;
-      case "report":
-        return <ReportPage />;
-      default:
-        return <ManagerHome setActivePage={setActivePage} />;
+      case "dashboard": return <ManagerHome setActivePage={setActivePage} />;
+      case "team":      return <TeamAttendancePage />;
+      case "overtime":  return <PendingOvertimePage />;
+      case "report":    return <ReportPage />;
+      default:          return <ManagerHome setActivePage={setActivePage} />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-bg-main)] text-[var(--color-text-primary)]">
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg-main)" }}>
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
-      <main className="flex-1 overflow-y-auto">{renderPage()}</main>
+      <main style={{ flex: 1, overflowY: "auto" }}>{render()}</main>
     </div>
   );
 };

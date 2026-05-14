@@ -8,235 +8,365 @@ import { useAttendance } from "../../attendance/hook/useAttendance.js";
 import { useOvertime } from "../../overtime/hook/useOvertime.js";
 import { useUser } from "../hook/useUser.js";
 import {
-  Users,
-  CalendarDays,
-  Timer,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  ArrowRight,
-  Shield,
-  FileText,
+  Users, CalendarDays, Timer, CheckCircle2,
+  XCircle, AlertCircle, ArrowRight, Shield,
+  FileText, Search, TrendingUp,
 } from "lucide-react";
 
+/* ── colours — same as Employee & Manager ── */
+const C = {
+  bg:     "var(--color-bg-main)",
+  card:   "var(--color-bg-card)",
+  inner:  "var(--color-bg-inner)",
+  border: "var(--color-border-subtle)",
+  orange: "var(--color-accent-primary)",
+  indigo: "var(--color-accent-secondary)",
+  green:  "var(--color-accent-success)",
+  yellow: "var(--color-accent-warning)",
+  red:    "var(--color-accent-danger)",
+  t1:     "var(--color-text-primary)",
+  t2:     "var(--color-text-secondary)",
+  tm:     "var(--color-text-muted)",
+};
+
+/* ── Stat card — same as Employee & Manager ── */
+const StatCard = ({ label, value, sub, subColor, Icon, iconBg }) => (
+  <div
+    className="metric-card"
+    style={{ flex: 1, display: "flex", alignItems: "flex-start", gap: 16 }}
+  >
+    <div style={{
+      width: 44, height: 44, borderRadius: 11, flexShrink: 0,
+      background: iconBg, display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <Icon size={20} color={subColor || C.orange} />
+    </div>
+    <div>
+      <p style={{ fontSize: 11, fontWeight: 600, color: C.t2, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
+        {label}
+      </p>
+      <p style={{ fontSize: 26, fontWeight: 700, color: C.t1, lineHeight: 1, letterSpacing: "-0.5px" }}>
+        {value}
+      </p>
+      {sub && (
+        <p style={{ fontSize: 11, fontWeight: 500, color: subColor || C.t2, marginTop: 5 }}>
+          {sub}
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+/* ── AdminHome ── */
 const AdminHome = ({ setActivePage }) => {
-  const { allRecords } = useSelector((state) => state.attendance);
-  const { pendingOvertimes } = useSelector((state) => state.overtime);
-  const { users } = useSelector((state) => state.user);
-  const { user } = useSelector((state) => state.auth);
+  const { allRecords }       = useSelector((s) => s.attendance);
+  const { pendingOvertimes } = useSelector((s) => s.overtime);
+  const { users }            = useSelector((s) => s.user);
+  const { user }             = useSelector((s) => s.auth);
 
-  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-  const todayStr = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric",
+  });
 
-  const todayRecords = allRecords.filter((r) => r.date === todayStr);
-  const presentToday = todayRecords.filter((r) => r.punchIn?.time).length;
-  const invalidRecords = allRecords.filter((r) => r.validationStatus === "invalid").length;
+  const todayStr          = new Date().toISOString().split("T")[0];
+  const todayRecords      = allRecords.filter((r) => r.date === todayStr);
+  const presentToday      = todayRecords.filter((r) => r.punchIn?.time).length;
+  const invalidRecords    = allRecords.filter((r) => r.validationStatus === "invalid").length;
   const pendingValidation = allRecords.filter((r) => r.validationStatus === "pending" && r.punchIn?.time).length;
-  const totalEmployees = users.filter((u) => u.role === "employee").length;
-  const totalManagers = users.filter((u) => u.role === "manager").length;
+  const totalEmployees    = users.filter((u) => u.role === "employee").length;
+  const totalManagers     = users.filter((u) => u.role === "manager").length;
+
+  const GAP = 16;
+  const PAD = 28;
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-[var(--color-bg-main)]">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-[var(--color-border-subtle)]">
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh", background: C.bg }}>
+
+      {/* ── TOP BAR ── */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: `20px ${PAD}px`,
+        borderBottom: `1px solid ${C.border}`,
+        background: C.bg,
+      }}>
         <div>
-          <div className="flex items-center gap-2.5 mb-1">
-             <div className="p-1 rounded bg-[var(--color-accent-primary)]/10">
-                 <Shield size={16} className="text-[var(--color-accent-primary)]" />
-             </div>
-             <h2 className="text-xl font-bold text-white tracking-wide">Admin Control Center</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(249,115,22,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Shield size={14} color={C.orange} />
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.3px" }}>
+              Admin Control Center
+            </h2>
           </div>
-          <p className="text-sm text-[var(--color-text-secondary)] ml-9">{today}</p>
+          <p style={{ fontSize: 13, color: C.t2, marginLeft: 38 }}>{today}</p>
         </div>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm bg-[var(--color-accent-primary)] ring-2 ring-white/10 shadow-lg shadow-[var(--color-accent-primary)]/20">
-          {user?.name?.charAt(0).toUpperCase()}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "9px 16px", borderRadius: 999,
+            background: C.card, border: `1px solid ${C.border}`,
+          }}>
+            <Search size={14} color={C.t2} />
+            <input
+              type="text" placeholder="Search..."
+              style={{ background: "transparent", border: "none", outline: "none", fontSize: 13, color: C.t2, width: 160 }}
+            />
+          </div>
+          <div style={{
+            width: 38, height: 38, borderRadius: "50%",
+            background: C.orange, display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, fontWeight: 700, color: "#fff",
+            boxShadow: "0 0 0 3px rgba(249,115,22,0.15)",
+          }}>
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
         </div>
       </div>
 
-      <div className="p-8 space-y-6">
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { label: "Total Users", value: users.length, icon: <Users size={16} className="text-[var(--color-accent-primary)]" />, accent: "var(--color-accent-primary)" },
-            { label: "Present Today", value: presentToday, icon: <CalendarDays size={16} className="text-[var(--color-accent-success)]" />, accent: "var(--color-accent-success)" },
-            { label: "Pending Overtime", value: pendingOvertimes.length, icon: <Timer size={16} className="text-[var(--color-accent-warning)]" />, accent: "var(--color-accent-warning)" },
-            { label: "Invalid Records", value: invalidRecords, icon: <XCircle size={16} className="text-[var(--color-accent-danger)]" />, accent: "var(--color-accent-danger)" },
-          ].map((s) => (
-            <div key={s.label} className="metric-card shadow-sm border border-[var(--color-border-subtle)]">
-              <div className="flex items-center gap-2.5 mb-4">
-                 <div className="p-1.5 rounded bg-white/5 border border-white/10">
-                     {s.icon}
-                 </div>
-                 <p className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">{s.label}</p>
+      {/* ── BODY ── */}
+      <div style={{ flex: 1, display: "flex", gap: GAP, padding: PAD }}>
+
+        {/* ── LEFT (main) ── */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: GAP, minWidth: 0 }}>
+
+          {/* Stat cards row */}
+          <div style={{ display: "flex", gap: GAP }}>
+            <StatCard
+              label="Total Users" value={users.length}
+              sub={`${totalEmployees} employees · ${totalManagers} managers`}
+              Icon={Users} subColor={C.orange}
+              iconBg="rgba(249,115,22,0.12)"
+            />
+            <StatCard
+              label="Present Today" value={presentToday}
+              sub="↑ active attendance today"
+              Icon={TrendingUp} subColor={C.green}
+              iconBg="rgba(34,197,94,0.12)"
+            />
+            <StatCard
+              label="Pending Overtime" value={pendingOvertimes.length}
+              sub={pendingOvertimes.length > 0 ? "Needs review" : "All clear"}
+              Icon={Timer} subColor={C.yellow}
+              iconBg="rgba(245,158,11,0.12)"
+            />
+            <StatCard
+              label="Invalid Records" value={invalidRecords}
+              sub={invalidRecords > 0 ? "Flagged for review" : "No issues"}
+              Icon={XCircle} subColor={C.red}
+              iconBg="rgba(239,68,68,0.12)"
+            />
+          </div>
+
+          {/* Middle row: User breakdown + Today's summary */}
+          <div style={{ display: "flex", gap: GAP }}>
+
+            {/* User Breakdown */}
+            <div className="metric-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: C.t1 }}>User Breakdown</p>
+                  <p style={{ fontSize: 12, color: C.t2, marginTop: 3 }}>Roles distribution across the system</p>
+                </div>
               </div>
-              <p className="text-3xl font-bold" style={{ color: s.accent }}>{s.value}</p>
-            </div>
-          ))}
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Users Breakdown */}
-          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)] flex flex-col h-[360px]">
-            <div className="flex items-center justify-between mb-6">
-               <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded bg-[var(--color-accent-primary)]/10">
-                     <Users size={16} className="text-[var(--color-accent-primary)]" />
-                  </div>
-                  <p className="text-base font-bold text-white tracking-wide">User Breakdown</p>
-               </div>
-            </div>
-            
-            <div className="flex-1 space-y-5">
-              {[
-                { label: "Employees", count: totalEmployees, color: "var(--color-accent-primary)" },
-                { label: "Managers", count: totalManagers, color: "var(--color-accent-success)" },
-                { label: "Admins", count: users.filter((u) => u.role === "admin").length, color: "var(--color-accent-warning)" },
-              ].map((item) => (
-                <div key={item.label}>
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium text-[var(--color-text-secondary)]">{item.label}</p>
-                        <p className="text-sm font-bold text-white">{item.count}</p>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-[var(--color-bg-main)] w-full overflow-hidden">
-                       <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${Math.max((item.count / (users.length || 1)) * 100, 2)}%`, backgroundColor: item.color }} />
-                    </div>
-                </div>
-              ))}
-            </div>
-            <button onClick={() => setActivePage("users")} className="flex items-center justify-center gap-2 text-xs font-semibold py-3 mt-4 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-main)] hover:bg-white/5 transition-colors text-white">
-              View all users <ArrowRight size={14} />
-            </button>
-          </div>
-
-          {/* Today's Attendance Summary */}
-          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)] flex flex-col h-[360px]">
-            <div className="flex items-center justify-between mb-6">
-               <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded bg-[var(--color-accent-success)]/10">
-                     <CalendarDays size={16} className="text-[var(--color-accent-success)]" />
-                  </div>
-                  <p className="text-base font-bold text-white tracking-wide">Today's Summary</p>
-               </div>
-              <button onClick={() => setActivePage("attendance")} className="flex items-center gap-1 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-white transition-colors">
-                View all <ArrowRight size={12} />
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-auto pr-2">
-                {todayRecords.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full opacity-60">
-                    <AlertCircle size={32} className="mb-3 text-[var(--color-text-muted)]" />
-                    <p className="text-sm font-medium text-[var(--color-text-secondary)]">No records today yet</p>
-                </div>
-                ) : (
-                <table className="w-full text-left border-collapse">
-                    <tbody>
-                        {todayRecords.slice(0, 5).map((r) => (
-                        <tr key={r._id} className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-card-hover)] transition-colors">
-                            <td className="py-2.5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold bg-[var(--color-bg-main)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)]">
-                                        {(r.userId?.name || "?")[0].toUpperCase()}
-                                    </div>
-                                    <p className="text-sm font-medium text-white">{r.userId?.name}</p>
-                                </div>
-                            </td>
-                            <td className="py-2.5 text-right">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex items-center justify-center w-fit ml-auto
-                                    ${r.status === 'completed' ? 'bg-[var(--color-accent-success)]/10 text-[var(--color-accent-success)]' : 'bg-[var(--color-accent-warning)]/10 text-[var(--color-accent-warning)]'}`}
-                                >
-                                    {r.status === "completed" ? "Done" : "Active"}
-                                </span>
-                            </td>
-                        </tr>
-                        ))}
-                    </tbody>
-                </table>
-                )}
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)] flex flex-col h-[360px]">
-             <div className="flex items-center gap-2.5 mb-6">
-                <p className="text-base font-bold text-white tracking-wide">Quick Actions</p>
-             </div>
-             
-             <div className="flex flex-col gap-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: 18, flex: 1 }}>
                 {[
-                { label: "Review Pending Overtime", sub: `${pendingOvertimes.length} awaiting`, page: "overtime", icon: <Timer size={18} className="text-[var(--color-accent-warning)]" />, bg: "bg-[var(--color-accent-warning)]/10" },
-                { label: "Validate Attendance", sub: `${pendingValidation} pending`, page: "attendance", icon: <CheckCircle size={18} className="text-[var(--color-accent-success)]" />, bg: "bg-[var(--color-accent-success)]/10" },
-                { label: "Generate Report", sub: "Daily attendance report", page: "report", icon: <FileText size={18} className="text-[var(--color-accent-primary)]" />, bg: "bg-[var(--color-accent-primary)]/10" },
-                ].map((action) => (
-                <button key={action.label} onClick={() => setActivePage(action.page)}
-                    className="group flex items-center gap-4 p-4 rounded-xl text-left transition-all border border-[var(--color-border-subtle)] bg-[var(--color-bg-main)] hover:bg-[var(--color-bg-card-hover)]"
-                >
-                    <div className={`p-2 rounded-lg ${action.bg}`}>
-                        {action.icon}
+                  { label: "Employees", count: totalEmployees, color: C.orange },
+                  { label: "Managers",  count: totalManagers,  color: C.green  },
+                  { label: "Admins",    count: users.filter((u) => u.role === "admin").length, color: C.yellow },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                      <p style={{ fontSize: 13, color: C.t2, fontWeight: 500 }}>{item.label}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{item.count}</p>
                     </div>
-                    <div>
-                        <p className="text-sm font-semibold text-white group-hover:text-[var(--color-accent-primary)] transition-colors">{action.label}</p>
-                        <p className="text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)] mt-0.5">{action.sub}</p>
+                    <div style={{ height: 6, borderRadius: 99, background: C.inner, overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", borderRadius: 99,
+                        width: `${Math.max((item.count / (users.length || 1)) * 100, 2)}%`,
+                        background: item.color, transition: "width 0.8s ease",
+                      }} />
                     </div>
-                    <ArrowRight size={16} className="ml-auto text-[var(--color-text-muted)] group-hover:text-[var(--color-accent-primary)] transition-colors" />
-                </button>
+                  </div>
                 ))}
-            </div>
-          </div>
-        </div>
+              </div>
 
-        {/* All Users Table */}
-        {users.length > 0 && (
-          <div className="metric-card shadow-sm border border-[var(--color-border-subtle)]">
-            <div className="flex items-center justify-between mb-6">
-               <div className="flex items-center gap-2.5">
-                  <p className="text-base font-bold text-white tracking-wide">Recent Users</p>
-               </div>
-              <button onClick={() => setActivePage("users")} className="flex items-center gap-1 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-white transition-colors">
-                View all <ArrowRight size={12} />
+              <button
+                onClick={() => setActivePage("users")}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  marginTop: 20, padding: "10px 0", borderRadius: 10,
+                  border: `1px solid ${C.border}`, background: C.inner,
+                  fontSize: 12, fontWeight: 600, color: C.t1, cursor: "pointer",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#1e1e1e"}
+                onMouseLeave={e => e.currentTarget.style.background = C.inner}
+              >
+                View All Users <ArrowRight size={13} />
               </button>
             </div>
-            
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                        <tr className="border-b border-[var(--color-border-subtle)] text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
-                            <th className="pb-3 pl-2">Name</th>
-                            <th className="pb-3">Email</th>
-                            <th className="pb-3 text-center">Role</th>
-                            <th className="pb-3 text-right pr-2">Department</th>
-                        </tr>
-                    </thead>
+
+            {/* Today's Attendance Summary */}
+            <div className="metric-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: C.t1 }}>Today's Summary</p>
+                  <p style={{ fontSize: 12, color: C.t2, marginTop: 3 }}>Live attendance across all employees</p>
+                </div>
+                <button
+                  onClick={() => setActivePage("attendance")}
+                  style={{ fontSize: 12, fontWeight: 600, color: C.orange, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                >
+                  View All <ArrowRight size={12} />
+                </button>
+              </div>
+
+              <div style={{ overflowY: "auto", flex: 1 }}>
+                {todayRecords.length === 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: 40, opacity: 0.6 }}>
+                    <AlertCircle size={32} color={C.tm} style={{ marginBottom: 12 }} />
+                    <p style={{ fontSize: 13, color: C.t2, fontWeight: 500 }}>No records for today yet</p>
+                  </div>
+                ) : (
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <tbody>
-                        {users.slice(0, 5).map((u) => (
-                            <tr key={u._id} className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-card-hover)] transition-colors">
-                                <td className="py-3 pl-2 font-medium text-sm text-white">{u.name}</td>
-                                <td className="py-3 text-sm text-[var(--color-text-secondary)]">{u.email}</td>
-                                <td className="py-3 text-center">
-                                    <span className={`capitalize text-[10px] font-bold px-3 py-1 rounded inline-block
-                                        ${u.role === 'admin' ? 'bg-[var(--color-accent-warning)]/10 text-[var(--color-accent-warning)] border border-[var(--color-accent-warning)]/20' 
-                                        : u.role === 'manager' ? 'bg-[var(--color-accent-success)]/10 text-[var(--color-accent-success)] border border-[var(--color-accent-success)]/20' 
-                                        : 'bg-white/5 text-[var(--color-text-secondary)] border border-white/10'}`}
-                                    >
-                                        {u.role}
-                                    </span>
-                                </td>
-                                <td className="py-3 pr-2 text-sm text-right text-[var(--color-text-secondary)]">{u.department || "—"}</td>
-                            </tr>
-                        ))}
+                      {todayRecords.slice(0, 6).map((r) => (
+                        <tr key={r._id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                          <td style={{ padding: "11px 0" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <div style={{
+                                width: 30, height: 30, borderRadius: "50%",
+                                background: C.inner, border: `1px solid ${C.border}`,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 11, fontWeight: 700, color: C.t1, flexShrink: 0,
+                              }}>
+                                {(r.userId?.name || "?")[0].toUpperCase()}
+                              </div>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{r.userId?.name || "Unknown"}</p>
+                            </div>
+                          </td>
+                          <td style={{ padding: "11px 0", textAlign: "right" }}>
+                            <span style={{
+                              fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 5,
+                              background: r.status === "completed" ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
+                              color: r.status === "completed" ? C.green : C.yellow,
+                              textTransform: "uppercase", letterSpacing: "0.05em",
+                            }}>
+                              {r.status === "completed" ? "Done" : "Active"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
-                </table>
+                  </table>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="metric-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 20 }}>Quick Actions</p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  { label: "Review Pending Overtime", sub: `${pendingOvertimes.length} awaiting`, page: "overtime", Icon: Timer,       color: C.yellow, bg: "rgba(245,158,11,0.12)"  },
+                  { label: "Validate Attendance",     sub: `${pendingValidation} pending`,         page: "attendance", Icon: CheckCircle2, color: C.green,  bg: "rgba(34,197,94,0.12)"   },
+                  { label: "Generate Report",          sub: "Daily attendance report",              page: "report",     Icon: FileText,     color: C.orange, bg: "rgba(249,115,22,0.12)"  },
+                ].map((action) => (
+                  <button
+                    key={action.label}
+                    onClick={() => setActivePage(action.page)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 14,
+                      padding: "14px 16px", borderRadius: 10, textAlign: "left",
+                      border: `1px solid ${C.border}`, background: C.inner,
+                      cursor: "pointer", transition: "background 0.15s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#1a1a1a"}
+                    onMouseLeave={e => e.currentTarget.style.background = C.inner}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 9, background: action.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <action.Icon size={17} color={action.color} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{action.label}</p>
+                      <p style={{ fontSize: 10, fontWeight: 600, color: C.t2, textTransform: "uppercase", letterSpacing: "0.07em", marginTop: 3 }}>{action.sub}</p>
+                    </div>
+                    <ArrowRight size={14} color={C.tm} />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Recent Users Table */}
+          {users.length > 0 && (
+            <div className="metric-card" style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: C.t1 }}>Recent Users</p>
+                <button
+                  onClick={() => setActivePage("users")}
+                  style={{ fontSize: 12, fontWeight: 600, color: C.orange, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                >
+                  View All <ArrowRight size={12} />
+                </button>
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>
+                  <thead>
+                    <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                      {["NAME", "EMAIL", "ROLE", "DEPARTMENT"].map((h, i) => (
+                        <th key={h} style={{
+                          paddingBottom: 10, fontSize: 10, fontWeight: 700,
+                          color: C.tm, letterSpacing: "0.08em",
+                          textAlign: i === 3 ? "right" : i === 2 ? "center" : "left",
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.slice(0, 5).map((u) => (
+                      <tr key={u._id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <td style={{ padding: "12px 0", fontSize: 13, fontWeight: 600, color: C.t1 }}>{u.name}</td>
+                        <td style={{ padding: "12px 0", fontSize: 13, color: C.t2 }}>{u.email}</td>
+                        <td style={{ padding: "12px 0", textAlign: "center" }}>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 5,
+                            textTransform: "capitalize",
+                            background: u.role === "admin"   ? "rgba(245,158,11,0.1)"
+                                       : u.role === "manager" ? "rgba(34,197,94,0.1)"
+                                       : "rgba(255,255,255,0.05)",
+                            color:      u.role === "admin"   ? C.yellow
+                                       : u.role === "manager" ? C.green
+                                       : C.t2,
+                            border: `1px solid ${
+                              u.role === "admin"   ? "rgba(245,158,11,0.2)"
+                            : u.role === "manager" ? "rgba(34,197,94,0.2)"
+                            : "rgba(255,255,255,0.08)"}`,
+                          }}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px 0", fontSize: 13, color: C.t2, textAlign: "right" }}>{u.department || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
+/* ── All Users Page ── */
 const AllUsersPage = () => {
-  const { users, loading } = useSelector((state) => state.user);
-  const [search, setSearch] = useState("");
+  const { users, loading } = useSelector((s) => s.user);
+  const [search, setSearch]       = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
 
   const filtered = users.filter((u) => {
@@ -247,67 +377,103 @@ const AllUsersPage = () => {
 
   if (loading && users.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-main)]">
-        <p className="text-sm font-medium text-[var(--color-text-secondary)]">Loading users...</p>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: C.bg }}>
+        <p style={{ fontSize: 13, color: C.t2, fontWeight: 500 }}>Loading users...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-8 bg-[var(--color-bg-main)]">
-      <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white tracking-wide mb-2">All Users</h2>
-          <p className="text-sm text-[var(--color-text-secondary)]">Manage and monitor all registered users in the system</p>
+    <div style={{ minHeight: "100vh", padding: 28, background: C.bg }}>
+      <div style={{ marginBottom: 28 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: C.t1, letterSpacing: "-0.3px", marginBottom: 6 }}>All Users</h2>
+        <p style={{ fontSize: 13, color: C.t2 }}>Manage and monitor all registered users in the system</p>
       </div>
 
-      <div className="flex gap-4 mb-8">
-        <input type="text" placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="px-5 py-3 rounded-xl text-sm outline-none flex-1 bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)] text-white placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent-primary)]/50 transition-colors"
-        />
-        <div className="flex gap-2">
-            {["all", "employee", "manager", "admin"].map((r) => (
-            <button key={r} onClick={() => setRoleFilter(r)}
-                className={`px-5 py-3 rounded-xl text-sm font-bold capitalize transition-all border
-                    ${roleFilter === r 
-                        ? "bg-[var(--color-accent-primary)] border-[var(--color-accent-primary)] text-white shadow-lg shadow-[var(--color-accent-primary)]/20" 
-                        : "bg-[var(--color-bg-card)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:text-white"}`}
+      {/* Filters */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "10px 16px", borderRadius: 10, flex: 1,
+          background: C.card, border: `1px solid ${C.border}`,
+        }}>
+          <Search size={14} color={C.t2} />
+          <input
+            type="text" placeholder="Search by name or email..."
+            value={search} onChange={(e) => setSearch(e.target.value)}
+            style={{ background: "transparent", border: "none", outline: "none", fontSize: 13, color: C.t1, width: "100%" }}
+          />
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {["all", "employee", "manager", "admin"].map((r) => (
+            <button
+              key={r}
+              onClick={() => setRoleFilter(r)}
+              style={{
+                padding: "10px 18px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                textTransform: "capitalize", cursor: "pointer", transition: "all 0.15s",
+                background: roleFilter === r ? C.orange : C.card,
+                border: `1px solid ${roleFilter === r ? C.orange : C.border}`,
+                color: roleFilter === r ? "#fff" : C.t2,
+                boxShadow: roleFilter === r ? "0 4px 14px rgba(249,115,22,0.25)" : "none",
+              }}
             >
-                {r}
+              {r}
             </button>
-            ))}
+          ))}
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="metric-card flex flex-col items-center justify-center h-64 border border-[var(--color-border-subtle)]">
-          <AlertCircle size={48} className="mb-4 text-[var(--color-text-muted)]" />
-          <p className="text-base font-medium text-[var(--color-text-secondary)]">No users found matching your criteria</p>
+        <div className="metric-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 240 }}>
+          <AlertCircle size={40} color={C.tm} style={{ marginBottom: 14 }} />
+          <p style={{ fontSize: 14, color: C.t2, fontWeight: 500 }}>No users found matching your criteria</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {filtered.map((u) => (
-            <div key={u._id} className="metric-card shadow-sm border border-[var(--color-border-subtle)] hover:border-[var(--color-accent-primary)]/30 transition-colors">
-              <div className="flex items-start justify-between mb-4">
-                 <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white bg-[var(--color-accent-primary)] ring-4 ring-[var(--color-accent-primary)]/10">
-                    {u.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className={`capitalize text-[10px] font-bold px-3 py-1 rounded inline-block
-                        ${u.role === 'admin' ? 'bg-[var(--color-accent-warning)]/10 text-[var(--color-accent-warning)] border border-[var(--color-accent-warning)]/20' 
-                        : u.role === 'manager' ? 'bg-[var(--color-accent-success)]/10 text-[var(--color-accent-success)] border border-[var(--color-accent-success)]/20' 
-                        : 'bg-white/5 text-[var(--color-text-secondary)] border border-white/10'}`}
-                    >
-                    {u.role}
-                  </span>
+            <div
+              key={u._id}
+              className="metric-card"
+              style={{ transition: "border-color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(249,115,22,0.3)"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+            >
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{
+                  width: 46, height: 46, borderRadius: "50%",
+                  background: C.orange, display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 18, fontWeight: 700, color: "#fff",
+                  boxShadow: "0 0 0 4px rgba(249,115,22,0.12)",
+                }}>
+                  {u.name.charAt(0).toUpperCase()}
+                </div>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 5,
+                  textTransform: "capitalize",
+                  background: u.role === "admin"   ? "rgba(245,158,11,0.1)"
+                             : u.role === "manager" ? "rgba(34,197,94,0.1)"
+                             : "rgba(255,255,255,0.05)",
+                  color:      u.role === "admin"   ? C.yellow
+                             : u.role === "manager" ? C.green
+                             : C.t2,
+                  border: `1px solid ${
+                    u.role === "admin"   ? "rgba(245,158,11,0.2)"
+                  : u.role === "manager" ? "rgba(34,197,94,0.2)"
+                  : "rgba(255,255,255,0.08)"}`,
+                }}>
+                  {u.role}
+                </span>
               </div>
-              
-              <div>
-                 <p className="font-bold text-lg text-white mb-1">{u.name}</p>
-                 <p className="text-sm text-[var(--color-text-secondary)] mb-4">{u.email}</p>
-              </div>
-              
-              <div className="pt-4 border-t border-[var(--color-border-subtle)]">
-                  <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Department</p>
-                  <p className="text-sm font-medium text-white">{u.department || "Unassigned"}</p>
+
+              <p style={{ fontSize: 16, fontWeight: 700, color: C.t1, marginBottom: 4 }}>{u.name}</p>
+              <p style={{ fontSize: 13, color: C.t2, marginBottom: 16 }}>{u.email}</p>
+
+              <div style={{ paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: C.tm, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5 }}>
+                  Department
+                </p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{u.department || "Unassigned"}</p>
               </div>
             </div>
           ))}
@@ -317,11 +483,12 @@ const AllUsersPage = () => {
   );
 };
 
+/* ── Shell ── */
 const AdminDashboard = () => {
-  const [activePage, setActivePage] = useState("dashboard");
-  const { handleGetAllAttendance } = useAttendance();
-  const { handleGetPendingOvertimes } = useOvertime();
-  const { handleGetAllUsers } = useUser();
+  const [activePage, setActivePage]       = useState("dashboard");
+  const { handleGetAllAttendance }        = useAttendance();
+  const { handleGetPendingOvertimes }     = useOvertime();
+  const { handleGetAllUsers }             = useUser();
 
   useEffect(() => {
     handleGetAllAttendance();
@@ -329,21 +496,21 @@ const AdminDashboard = () => {
     handleGetAllUsers();
   }, []);
 
-  const renderPage = () => {
+  const render = () => {
     switch (activePage) {
-      case "dashboard": return <AdminHome setActivePage={setActivePage} />;
+      case "dashboard":  return <AdminHome setActivePage={setActivePage} />;
       case "attendance": return <AllAttendancePage />;
-      case "users": return <AllUsersPage />;
-      case "overtime": return <PendingOvertimePage />;
-      case "report": return <ReportPage />;
-      default: return <AdminHome setActivePage={setActivePage} />;
+      case "users":      return <AllUsersPage />;
+      case "overtime":   return <PendingOvertimePage />;
+      case "report":     return <ReportPage />;
+      default:           return <AdminHome setActivePage={setActivePage} />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-bg-main)]">
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg-main)" }}>
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
-      <main className="flex-1 overflow-y-auto">{renderPage()}</main>
+      <main style={{ flex: 1, overflowY: "auto" }}>{render()}</main>
     </div>
   );
 };
